@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<!--
+simple remapping launch file for zed camera in semantic slam
+-->
+<launch>
+	<arg name="svo_file"             default="" /> <!-- <arg name="svo_file" default="path/to/svo/file.svo"> -->
+    <arg name="stream"               default="" /> <!-- <arg name="stream" default="<ip_address>:<port>"> -->
+
+    <arg name="node_name"            default="zed_node" />
+    <arg name="camera_model"         default="zed" /> <!-- 'zed' or 'zedm' -->
+    <arg name="publish_urdf"         default="true" />
+
+    <arg name="camera_name"          default="zed" />
+
+    <arg name="base_frame"           default="base_link" />
+
+    <arg name="cam_pos_x"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_y"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_z"             default="0.0" /> <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_roll"              default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pitch"             default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_yaw"               default="0.0" /> <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <group ns="$(arg camera_name)">
+
+    	<!--for stereo semantic cloud, rgbd slam and rgbd semantic cloud-->
+    	<remap from="/zed/zed_node/depth/depth_registered" to="/camera/depth_registered/image_raw"/>
+        <remap from="/zed/zed_node/right/image_rect_color" to="/camera/rgb/image_raw"/>
+
+        <!--for stereo slam-->
+<!--         <remap from="/zed/zed_node/left/image_rect_color" to="/camera/left/image_raw"/>
+        <remap from="/zed/zed_node/right/image_rect_color" to="/camera/right/image_raw"/> -->
+
+        <include file="$(find zed_wrapper)/launch/include/zed_camera.launch.xml">
+            <arg name="camera_name"         value="$(arg camera_name)" />
+            <arg name="svo_file"            value="$(arg svo_file)" />
+            <arg name="stream"              value="$(arg stream)" />
+            <arg name="node_name"           value="$(arg node_name)" />
+            <arg name="camera_model"        value="$(arg camera_model)" />
+            <arg name="base_frame"          value="$(arg base_frame)" />
+            <arg name="publish_urdf"        value="$(arg publish_urdf)" />
+            <arg name="cam_pos_x"           value="$(arg cam_pos_x)" />
+            <arg name="cam_pos_y"           value="$(arg cam_pos_y)" />
+            <arg name="cam_pos_z"           value="$(arg cam_pos_z)" />
+            <arg name="cam_roll"            value="$(arg cam_roll)" />
+            <arg name="cam_pitch"           value="$(arg cam_pitch)" />
+            <arg name="cam_yaw"             value="$(arg cam_yaw)" />
+        </include>
+    </group>
+</launch>

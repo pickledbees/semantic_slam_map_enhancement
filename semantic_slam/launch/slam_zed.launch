@@ -1,0 +1,10 @@
+<launch>
+
+  <arg name="type" default="rgbd" />
+
+	<!-- ORB_SLAM2 RGBD -->
+	<node pkg="orb_slam2" type="$(arg type)" name="orb_slam_zed" output="screen" args="$(find orb_slam2)../../../Vocabulary/ORBvoc.txt $(find semantic_slam)/params/zed.yaml" if="$(eval arg('type') == 'rgbd')"/>
+
+	<!-- ORB_SLAM2 Stereo -->
+    <node pkg="orb_slam2" type="$(arg type)" name="orb_slam_zed" output="screen" args="$(find orb_slam2)../../../Vocabulary/ORBvoc.txt $(find semantic_slam)/params/zed.yaml false" if="$(eval arg('type') == 'stereo')"/>
+</launch>
