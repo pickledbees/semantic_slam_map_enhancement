@@ -14,12 +14,13 @@ Camera.width: 336
 Camera.height: 188
 
 # Camera calibration and distortion parameters (OpenCV) VGA mode
-# Camera.fx: 338.1584777832031
-# Camera.fy: 338.1584777832031
-# Camera.cx: 330.7663879394531
-# Camera.cy: 184.78070068359375
-# Camera.width: 672
-# Camera.height: 376
+#  Camera.fx: 338.1584777832031
+#  Camera.fy: 338.1584777832031
+#  Camera.cx: 330.7663879394531
+#  Camera.cy: 184.78070068359375
+#
+#  Camera.width: 672
+#  Camera.height: 376
 
 # Camera calibration and distortion parameters (OpenCV) HD 720 downsampled by 2
 # Camera.fx: 699.520446777 #1396.0745849609375 / 2 (downsampled by 2)

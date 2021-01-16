@@ -1,0 +1,36 @@
+# Camera intrinsic matrix parameters (OpenCV)
+camera:
+  #  fx: 338.1584777832031
+  #  fy: 338.1584777832031
+  #  cx: 330.7663879394531
+  #  cy: 184.78070068359375
+  #
+  #  width: 672
+  #  height: 376
+
+  fx: 168.91293334960938
+  fy: 168.91293334960938
+  cx: 165.38365173339844
+  cy: 92.38917541503906
+
+  width: 336
+  height: 188
+
+# fx: 699.520446777
+# fy: 699.520446777
+# cx: 476.155426025
+# cy: 476.155426025
+
+# width: 640
+# height: 360
+
+semantic_pcl:
+  color_image_topic: "/camera/rgb/image_raw"
+  depth_image_topic: "/camera/depth_registered/image_raw"
+  point_type: 1
+  frame_id: "/camera_rgb_optical_frame"
+  #dataset: "ade20k" # ade20k
+  dataset: "sunrgbd" # sunrgbd
+  model_path: "/home/han/Workspace/catkin_ws/models/pspnet_sunrgbd_best_model180625_5k.pth"
+  #model_path: "/home/han/Workspace/catkin_ws/models/pspnet_50_ade20k.pth"
+  #model_path: "/home/interns/xuan/models/pspnet_sunrgbd_best_model180625_5k.pth"

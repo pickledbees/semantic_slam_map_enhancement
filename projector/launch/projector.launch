@@ -1,0 +1,26 @@
+<launch>
+
+    <!--perform tf transform for projection-->
+    <node pkg="tf" type="static_transform_publisher" name="tf_transformer"
+          args="0 0 0 0.5 -0.5 0.5 0.5 world map 100"></node>
+
+    <!--octomap server-->
+    <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+        <param name="resolution" value="0.05"/>
+
+        <!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
+        <param name="frame_id" type="string" value="map"/>
+
+        <!-- maximum range to integrate (speedup!) -->
+        <param name="sensor_model/max_range" value="5.0"/>
+
+        <!-- data source to integrate (PointCloud2) -->
+        <remap from="/cloud_in" to="/semantic_pcl/semantic_pcl"/>
+        <remap from="/octomap_full" to="octomap_server/octomap_full"/>
+        <remap from="/octomap_binary" to="octomap_server/octomap_binary"/>
+    </node>
+    sud
+
+    <!-- projector node -->
+    <node pkg="projector" type="projector_node" name="insert_semantics"></node>
+</launch>

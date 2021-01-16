@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!-- combined launch file for constellation of nodes -->
+<launch>
+    <!-- camera -->
+    <include file="$(find semantic_slam)/launch/camera_zed.launch"/>
+
+    <!-- slam -->
+    <include file="$(find semantic_slam)/launch/slam_zed.launch"/>
+
+    <!-- semantic cloud generator and octomap generator -->
+    <include file="$(find semantic_slam)/launch/semantic_mapping_zed.launch"/>
+
+    <!-- projector node -->
+<!--    <include file="$(find projector)/launch/projector.launch"/>-->
+<!--    <include file="$(find landmark_extractor)/launch/landmark_extractor.launch"/>-->
+</launch>

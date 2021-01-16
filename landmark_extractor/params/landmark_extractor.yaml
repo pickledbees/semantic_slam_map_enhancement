@@ -1,0 +1,13 @@
+extractor:
+  camera_frame_id: "camera_rgb_optical_frame"
+  octomap_frame_id: "world"
+  octomap_topic: "/octomap_full"
+  landmark_topic: "/landmarks"
+  search_size: 10
+  search_radius: 10000
+  strategy: 1                # 0: NEAREST, 1: UNIQUE
+  #search_significance: 1.0  #[0.1, 1.0] percentage of depth to search in octree DEPRECATED in favour of adjusting octomap resolution
+
+  visualiser_point_scale: 0.2
+  visualiser_text_scale: 0.5
+  visualiser_namespace: "extractor"
