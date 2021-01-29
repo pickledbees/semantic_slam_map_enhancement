@@ -1,6 +1,8 @@
 <component name="libraryTable">
   <library name="workspace">
-    <CLASSES />
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/.git" />
+    </CLASSES>
     <JAVADOC />
     <SOURCES />
   </library>

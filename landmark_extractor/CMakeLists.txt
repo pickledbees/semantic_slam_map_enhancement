@@ -7,8 +7,9 @@ project(landmark_extractor)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+find_package(octomap REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
-        octomap
         octomap_msgs
         roscpp
         tf2_ros
@@ -53,6 +54,9 @@ add_message_files(
         FILES
         ExtractorLandmark.msg
         ExtractorLandmarks.msg
+        FloorPlanCoordMsg.msg
+        ChainCorrelationPairMsg.msg
+        MatchResultsMsg.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -106,8 +110,8 @@ add_message_files(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
         INCLUDE_DIRS include
-        #  LIBRARIES landmark_extractor
         CATKIN_DEPENDS octomap_msgs roscpp tf2 tf2_ros message_runtime
+        LIBRARIES landmark_extractor
         #  DEPENDS system_lib
         DEPENDS octomap
 )
@@ -139,6 +143,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/landmark_extractor_node.cpp)
 add_executable(${PROJECT_NAME}_node src/extractor_landmark.cpp src/extractor.cpp src/extractor_node.cpp)
+add_executable(${PROJECT_NAME}_matcher_node src/markov_matcher_node.cpp src/markov_matcher.cpp src/semantic_floorplan.cpp)
 add_executable(${PROJECT_NAME}_visualiser_node src/visualiser_node.cpp src/extractor.cpp src/extractor_landmark.cpp)
 
 ## Rename C++ executable without prefix
@@ -156,6 +161,7 @@ add_executable(${PROJECT_NAME}_visualiser_node src/visualiser_node.cpp src/extra
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_matcher_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}_visualiser_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
 #############
