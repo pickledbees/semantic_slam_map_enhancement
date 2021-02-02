@@ -8,6 +8,8 @@
 #include <vector>
 #include <cstdint>
 #include <unordered_map>
+#include <landmark_extractor/label_service.h>
+#include <opencv2/core.hpp>
 
 struct FloorPlanCoord {
     double x;
@@ -17,17 +19,16 @@ struct FloorPlanCoord {
 
 class SemanticFloorPlan {
 public:
-    bool hasLabel(int label);
+    bool hasLabel(uint8_t r, uint8_t g, uint8_t b);
 
-    void insertCoord(FloorPlanCoord &coord);
+    void insertCoord(FloorPlanCoord coord);
 
-    bool populateFromImage(const std::string &filePath);
+    bool populateFromImage(const std::string &filePath);    //image must be rgb, and only landmarks should be coloured
 
-    std::vector<FloorPlanCoord> getCoords(int label);
+    std::vector<FloorPlanCoord> getCoords(uint8_t r, uint8_t g, uint8_t b);
 
-    static int RGBToLabel(uint8_t r, uint8_t g, uint8_t b);
 private:
-    bool isLandmark(uint8_t r, uint8_t g, uint8_t b);
+    FloorPlanCoord getCentre(int xStart, int yStart, cv::Mat &image, cv::Mat &visited);
 
     std::unordered_map<int, std::vector<FloorPlanCoord>> map_;
 };

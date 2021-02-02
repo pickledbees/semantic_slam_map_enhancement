@@ -22,9 +22,9 @@ MatcherNode::MatcherNode(const ros::NodeHandle &nh) : nh_(nh) {
     nh_.getParam("matcher/floorplan_file_path", floorplan_file_path_);
     nh_.getParam("matcher/match_results_topic", match_results_topic_);
 
-    bool ok = fp_.populateFromImage(floorplan_file_path_);
-    if (!ok) {
-        ROS_WARN("Failed to load floorplan image from %s, floorplan is uninitialised", floorplan_file_path_.c_str());
+    ROS_INFO("Loading floorplan image from: %s", floorplan_file_path_.c_str());
+    if (!fp_.populateFromImage(floorplan_file_path_)) {
+        ROS_WARN("Failed to load floorplan image from :%s, floorplan is uninitialised", floorplan_file_path_.c_str());
     }
     matcher_ = new MarkovMatcher(top, min_correlation_threshold, max_buffer_size);
 
@@ -35,7 +35,8 @@ MatcherNode::MatcherNode(const ros::NodeHandle &nh) : nh_(nh) {
 void MatcherNode::messageCallback(landmark_extractor::ExtractorLandmarks landmarks) {
     MatchResults results = matcher_->match(landmarks, fp_);
 
-    //format into message   //TODO: remove the need for conversion
+    //format into message
+    //TODO: remove the need for conversion / convert to constant pointer
     landmark_extractor::MatchResultsMsg msg;
     msg.header.stamp = ros::Time::now();
     for (const auto &chainPair : results.chains) {

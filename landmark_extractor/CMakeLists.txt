@@ -8,6 +8,7 @@ project(landmark_extractor)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(octomap REQUIRED)
+find_package(OpenCV REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
         octomap_msgs
@@ -126,6 +127,7 @@ include_directories(
         include
         ${catkin_INCLUDE_DIRS}
         ${OCTOMAP_INCLUDE_DIRS}
+        ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -143,7 +145,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/landmark_extractor_node.cpp)
 add_executable(${PROJECT_NAME}_node src/extractor_landmark.cpp src/extractor.cpp src/extractor_node.cpp)
-add_executable(${PROJECT_NAME}_matcher_node src/markov_matcher_node.cpp src/markov_matcher.cpp src/semantic_floorplan.cpp)
+add_executable(${PROJECT_NAME}_matcher_node src/markov_matcher_node.cpp src/markov_matcher.cpp src/semantic_floorplan.cpp src/label_service.cpp)
 add_executable(${PROJECT_NAME}_visualiser_node src/visualiser_node.cpp src/extractor.cpp src/extractor_landmark.cpp)
 
 ## Rename C++ executable without prefix
@@ -161,7 +163,7 @@ add_executable(${PROJECT_NAME}_visualiser_node src/visualiser_node.cpp src/extra
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
-target_link_libraries(${PROJECT_NAME}_matcher_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_matcher_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES} ${OpenCV_LIBS})
 target_link_libraries(${PROJECT_NAME}_visualiser_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
 #############

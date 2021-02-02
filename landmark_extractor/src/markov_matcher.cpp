@@ -3,6 +3,7 @@
 //
 
 #include <landmark_extractor/markov_matcher.h>
+#include <landmark_extractor/label_service.h>
 #include <unordered_set>
 #include <queue>
 
@@ -73,7 +74,7 @@ MatchResults MarkovMatcher::match(landmark_extractor::ExtractorLandmarks &landma
     int i, j;
     for (i = 0, j = 0; i < landmarksMsg.landmarks.size(); i++) {
         landmark_extractor::ExtractorLandmark &l = landmarksMsg.landmarks[j];
-        if (fp.hasLabel(SemanticFloorPlan::RGBToLabel(l.r, l.g, l.b))) {
+        if (fp.hasLabel(l.r, l.g, l.b)) {
             indexes[j] = i;
             j++;
         }
@@ -110,7 +111,7 @@ MatchResults MarkovMatcher::match(landmark_extractor::ExtractorLandmarks &landma
 
     //initialise chains
     l = landmarksMsg.landmarks[pattern[0]];
-    candidates = fp.getCoords(SemanticFloorPlan::RGBToLabel(l.r, l.g, l.b));
+    candidates = fp.getCoords(l.r, l.g, l.b);
     for (auto candidate : candidates) {
         MarkovMatcherChain chain(&candidate);
         chains.push(chain);
@@ -120,7 +121,7 @@ MatchResults MarkovMatcher::match(landmark_extractor::ExtractorLandmarks &landma
     std::queue<MarkovMatcherChain> temp;
     for (i = 1; i < j; i++) {   //iterate over pattern
         l = landmarksMsg.landmarks[i];
-        candidates = fp.getCoords(SemanticFloorPlan::RGBToLabel(l.r, l.g, l.b));
+        candidates = fp.getCoords(l.r, l.g, l.b);
 
         while (!chains.empty()) {         //iterate over chains
             MarkovMatcherChain chain = chains.top();

@@ -3,6 +3,8 @@
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
   <component name="CidrRootsConfiguration">
     <sourceRoots>
+      <file path="$PROJECT_DIR$/landmark_extractor/include/landmark_extractor" />
+      <file path="$PROJECT_DIR$/landmark_extractor/src" />
       <file path="$PROJECT_DIR$/landmark_matcher/include" />
       <file path="$PROJECT_DIR$/landmark_matcher/src" />
     </sourceRoots>
