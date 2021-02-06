@@ -1,0 +1,7 @@
+matcher:
+  top: 3
+  min_correlation_threshold: -2 #[-1, 1] set to <-1 to consider all chains
+  max_buffer_size: 10
+  floorplan_file_path: "/home/han/Workspace/catkin_ws/floorplans/room.bmp"
+  match_results_topic: "/match_results"
+  landmarks_topic: "/landmarks"

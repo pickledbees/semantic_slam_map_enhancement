@@ -13,14 +13,16 @@
 
 struct MatchResults {
     std::vector<landmark_extractor::ExtractorLandmark> landmarks;
-    std::vector<std::pair<std::vector<FloorPlanCoord *>, double>> chains;
+    std::vector<std::pair<std::vector<FloorPlanCoord>, double>> chains;
 };
 
 class MarkovMatcherChain {
 public:
-    explicit MarkovMatcherChain(FloorPlanCoord *head);
+    explicit MarkovMatcherChain(FloorPlanCoord head);
 
-    std::vector<FloorPlanCoord *> coords;
+    //MarkovMatcherChain(const MarkovMatcherChain &c);
+
+    std::vector<FloorPlanCoord> coords;
     double correlation = 1;
     struct {
         double x = 0, y = 0, xy = 0, xSquare = 0, ySquare = 0;
@@ -30,7 +32,12 @@ public:
 
     friend bool operator>(const MarkovMatcherChain &c1, const MarkovMatcherChain &c2);
 
-    void appendCoord(int *pattern, std::vector<landmark_extractor::ExtractorLandmark> &landmark, FloorPlanCoord *next);
+    void appendCoord(int *pattern, std::vector<landmark_extractor::ExtractorLandmark> &landmark, FloorPlanCoord next);
+
+    //TODO: clean up debug functions
+    std::string getSummary() const;
+
+    std::string getChainString() const;
 };
 
 class MarkovMatcher {

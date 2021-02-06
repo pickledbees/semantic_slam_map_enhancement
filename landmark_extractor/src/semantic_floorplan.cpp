@@ -1,7 +1,6 @@
 //
 // Created by han on 21/1/21.
 //
-
 #include <landmark_extractor/semantic_floorplan.h>
 #include <landmark_extractor/label_service.h>
 #include <opencv2/core.hpp>
@@ -13,42 +12,44 @@ bool SemanticFloorPlan::hasLabel(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void SemanticFloorPlan::insertCoord(FloorPlanCoord coord) {
-    if (map_.find(coord.label) == map_.end()) map_.insert({coord.label, std::vector<FloorPlanCoord>()});
-    map_[coord.label].push_back(coord);
+    if (map_.find(coord.hash) == map_.end()) map_.insert({coord.hash, std::vector<FloorPlanCoord>()});
+    map_[coord.hash].push_back(coord);
 }
 
-FloorPlanCoord SemanticFloorPlan::getCentre(int xStart, int yStart, cv::Mat &image, cv::Mat &visited) {
+FloorPlanCoord SemanticFloorPlan::getCentre(int colStart, int rowStart, cv::Mat &image, cv::Mat &visited) {
     std::stack<cv::Point> stack;
-    stack.push(cv::Point(xStart, yStart));
+    stack.push(cv::Point(colStart, rowStart));
 
-    double sumX = 0, sumY = 0;
-    int x, y, count = 0, boundX = image.cols - 1, boundY = image.rows - 1;
-    cv::Point p;
-    cv::Vec3b pixel;
+    cv::Vec3b pixel = image.at<cv::Vec3b>(rowStart, colStart);
+    int hash = LabelService::RGBToIntHash(pixel[2], pixel[1], pixel[0]);
+
+    double sumCol = 0, sumRow = 0;
+    int col, row, count = 0, boundCols = image.cols - 1, boundRows = image.rows - 1;
     while (!stack.empty()) {
-        x = stack.top().x;
-        y = stack.top().y;
+        col = stack.top().x;
+        row = stack.top().y;
         stack.pop();
 
-        pixel = image.at<cv::Vec3b>(x, y);
+        pixel = image.at<cv::Vec3b>(row, col);
 
-        if (!LabelService::isLandmark(pixel[2], pixel[1], pixel[0]) || visited.at<unsigned char>(x, y) == 1) continue;
+        if (visited.at<unsigned char>(row, col) == 0 &&
+            LabelService::RGBToIntHash(pixel[2], pixel[1], pixel[0]) == hash) {
+            sumCol += col;
+            sumRow += row;
+            count++;
+            visited.at<unsigned char>(row, col) = 1;
 
-        sumX += x;
-        sumY += y;
-        count++;
-        visited.at<unsigned char>(x, y) = 1;
-
-        if (x > 0) stack.push(cv::Point(x - 1, y));
-        if (x < boundX) stack.push(cv::Point(x + 1, y));
-        if (y > 0) stack.push(cv::Point(x, y - 1));
-        if (y < boundY) stack.push(cv::Point(x, y + 1));
+            if (col > 0) stack.push(cv::Point(col - 1, row));
+            if (col < boundCols) stack.push(cv::Point(col + 1, row));
+            if (row > 0) stack.push(cv::Point(col, row - 1));
+            if (row < boundRows) stack.push(cv::Point(col, row + 1));
+        }
     }
 
     FloorPlanCoord coord{};
-    coord.x = (int) (sumX / count);
-    coord.y = (int) (sumY / count);
-    coord.label = LabelService::RGBToIntHash(pixel[2], pixel[1], pixel[0]);
+    coord.x = sumCol / count;
+    coord.y = sumRow / count;
+    coord.hash = hash;
 
     return coord;
 }
@@ -56,6 +57,7 @@ FloorPlanCoord SemanticFloorPlan::getCentre(int xStart, int yStart, cv::Mat &ima
 //with blob detection, requires c-style access
 bool SemanticFloorPlan::populateFromImage(const std::string &filePath) {
     cv::Mat image = cv::imread(filePath, cv::IMREAD_COLOR);
+
     if (image.empty()) return false;
 
     //only work with RGB images
@@ -66,8 +68,8 @@ bool SemanticFloorPlan::populateFromImage(const std::string &filePath) {
 
     for (auto it = image.begin<cv::Vec3b>(), end = image.end<cv::Vec3b>(); it < end; it++) {
         auto pixel = *it;
-        if (LabelService::isLandmark(pixel[2], pixel[1], pixel[0]) &&
-            visited.at<unsigned char>(it.pos().x, it.pos().y) == 0) {
+        if (visited.at<unsigned char>(it.pos().y, it.pos().x) == 0 &&
+            LabelService::isLandmark(pixel[2], pixel[1], pixel[0])) {
             auto coord = getCentre(it.pos().x, it.pos().y, image, visited);
             insertCoord(coord);
         }
@@ -79,4 +81,25 @@ bool SemanticFloorPlan::populateFromImage(const std::string &filePath) {
 std::vector<FloorPlanCoord> SemanticFloorPlan::getCoords(uint8_t r, uint8_t g, uint8_t b) {
     return map_.find(LabelService::RGBToIntHash(r, g, b)) == map_.end() ? std::vector<FloorPlanCoord>()
                                                                         : map_[LabelService::RGBToIntHash(r, g, b)];
+}
+
+std::string SemanticFloorPlan::getSummary() {
+    std::ostringstream summary;
+    summary << "FLOORPLAN SUMMARY" << std::endl;
+
+    //get number of landmarks
+    int num = 0;
+    for (auto v : map_) {
+        num += v.second.size();
+    }
+
+    summary << "* Total no. landmarks: " << num << std::endl;
+    summary << "* Total no. types: " << map_.size() << std::endl;
+    summary << "TYPE COUNTS" << std::endl;
+
+    for (auto v : map_) {
+        summary << "** " << LabelService::getLabel(v.first) << ": " << v.second.size() << std::endl;
+    }
+
+    return summary.str();
 }

@@ -12,7 +12,7 @@
 
 class LabelService {
 public:
-    static inline int RGBToIntHash(uint8_t r, uint8_t g, uint8_t b);
+    static int RGBToIntHash(uint8_t r, uint8_t g, uint8_t b);
 
     static std::string getLabel(uint8_t r, uint8_t g, uint8_t b);
 

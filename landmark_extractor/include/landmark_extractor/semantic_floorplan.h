@@ -14,7 +14,7 @@
 struct FloorPlanCoord {
     double x;
     double y;
-    int label;
+    int hash;
 };
 
 class SemanticFloorPlan {
@@ -27,8 +27,10 @@ public:
 
     std::vector<FloorPlanCoord> getCoords(uint8_t r, uint8_t g, uint8_t b);
 
+    std::string getSummary();
+
 private:
-    FloorPlanCoord getCentre(int xStart, int yStart, cv::Mat &image, cv::Mat &visited);
+    static FloorPlanCoord getCentre(int colStart, int rowStart, cv::Mat &image, cv::Mat &visited);
 
     std::unordered_map<int, std::vector<FloorPlanCoord>> map_;
 };

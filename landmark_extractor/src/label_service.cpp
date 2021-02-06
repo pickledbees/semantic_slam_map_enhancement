@@ -65,5 +65,5 @@ const std::unordered_map<int, std::string> LabelService::map_ = {
         {12615808, "shelves"},
         {12632064, "towel"},
         //{12632192, "person"},
-        {16777215, "air"}
+        //{16777215, "air"}
 };

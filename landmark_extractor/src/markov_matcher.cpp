@@ -2,8 +2,10 @@
 // Created by han on 21/1/21.
 //
 
-#include <landmark_extractor/markov_matcher.h>
+#include <ros/ros.h>
 #include <landmark_extractor/label_service.h>
+
+#include <landmark_extractor/markov_matcher.h>
 #include <unordered_set>
 #include <queue>
 
@@ -12,11 +14,11 @@ distanceBetweenLandmarks(landmark_extractor::ExtractorLandmark &l1, landmark_ext
     return sqrt(pow(l1.x - l2.x, 2) + pow(l1.y - l2.y, 2));
 }
 
-inline double distanceBetweenFloorPlanCoords(FloorPlanCoord *c1, FloorPlanCoord *c2) {
-    return sqrt(pow(c1->x - c2->x, 2) + pow(c1->y - c2->y, 2));
+inline double distanceBetweenFloorPlanCoords(const FloorPlanCoord &c1, const FloorPlanCoord &c2) {
+    return sqrt(pow(c1.x - c2.x, 2) + pow(c1.y - c2.y, 2));
 }
 
-MarkovMatcherChain::MarkovMatcherChain(FloorPlanCoord *head) {
+MarkovMatcherChain::MarkovMatcherChain(FloorPlanCoord head) {
     coords.push_back(head);
 }
 
@@ -29,8 +31,9 @@ bool operator>(const MarkovMatcherChain &c1, const MarkovMatcherChain &c2) {
 }
 
 //performs correlation calculation optimised with memoization from previous chains
+//TODO: possibility of correlation becoming non-number
 void MarkovMatcherChain::appendCoord(int *pattern, std::vector<landmark_extractor::ExtractorLandmark> &landmarks,
-                                     FloorPlanCoord *next) {
+                                     FloorPlanCoord next) {
     coords.push_back(next);
     int size = coords.size();
     //compute dx and dy from difference of last 2
@@ -43,6 +46,23 @@ void MarkovMatcherChain::appendCoord(int *pattern, std::vector<landmark_extracto
     sum.ySquare = sum.ySquare + dy * dy;
     correlation = (size * sum.xy - sum.x * sum.y) /
                   sqrt((size * sum.xSquare - sum.x * sum.x) * (size * sum.ySquare - sum.y * sum.y));
+}
+
+std::string MarkovMatcherChain::getSummary() const {
+    std::ostringstream summary;
+    summary << "corr=" << correlation << std::endl;
+    summary << "sumx=" << sum.x << " sumy=" << sum.y << " sumxy=" << sum.xy << " sumxs=" << sum.xSquare << " sumys="
+            << sum.ySquare << std::endl;
+    summary << getChainString() << std::endl;
+    return summary.str();
+}
+
+std::string MarkovMatcherChain::getChainString() const {
+    std::ostringstream str;
+    for (auto coord : coords) {
+        str << LabelService::getLabel(coord.hash) << " " << coord.x << " " << coord.y << " -> ";
+    }
+    return str.str();
 }
 
 MarkovMatcher::MarkovMatcher(int top, double minCorrelationThreshold, int maxBufferSize) : top_(top),
@@ -63,8 +83,10 @@ MatchResults MarkovMatcher::match(landmark_extractor::ExtractorLandmarks &landma
      *      find candidates for landmark
      *      for each chain
      *          for each candidate
-     *              append candidate to chain and calculate correlation
-     *              if correlation < threshold, put chain back into circulation for consideration for next landmark
+     *              create new chain by appending candidate to chain and calculate correlation
+     *              if correlation < threshold, put new chain into queue for consideration for next landmark
+     *          discard the chain
+     *      repeat chain lookup
      *      trim number of chains by discarding the lowest X chains which have the lowest correlation
      *  if multiple chains remain, extract top few chains with highest correlation
      */
@@ -81,7 +103,7 @@ MatchResults MarkovMatcher::match(landmark_extractor::ExtractorLandmarks &landma
     }
 
     //j is know indicator of how many elements there are in the pattern
-    if (j < 1) return {};    //cannot perform match if filtered < 2;
+    if (j < 2) return {};    //cannot perform match if filtered < 2;
 
     //line up the landmarks (may remove since not really required)
     int *pattern = new int[j];  //indexes of landmarks in order
@@ -113,14 +135,14 @@ MatchResults MarkovMatcher::match(landmark_extractor::ExtractorLandmarks &landma
     l = landmarksMsg.landmarks[pattern[0]];
     candidates = fp.getCoords(l.r, l.g, l.b);
     for (auto candidate : candidates) {
-        MarkovMatcherChain chain(&candidate);
+        MarkovMatcherChain chain(candidate);
         chains.push(chain);
     }
 
     //build chains
     std::queue<MarkovMatcherChain> temp;
     for (i = 1; i < j; i++) {   //iterate over pattern
-        l = landmarksMsg.landmarks[i];
+        l = landmarksMsg.landmarks[pattern[i]];
         candidates = fp.getCoords(l.r, l.g, l.b);
 
         while (!chains.empty()) {         //iterate over chains
@@ -128,15 +150,16 @@ MatchResults MarkovMatcher::match(landmark_extractor::ExtractorLandmarks &landma
             chains.pop();
 
             for (auto coord : candidates) { //iterate over candidates
+                //TODO: fix the copying of the chain;
                 auto newChain = chain;      //copy chain
-                newChain.appendCoord(pattern, landmarksMsg.landmarks, &coord);
+                newChain.appendCoord(pattern, landmarksMsg.landmarks, coord);
                 if (newChain.correlation >= min_correlation_threshold_) {
                     temp.push(newChain);
                 }
             }
         }
 
-        while (!temp.empty()) { //sort chains by correlation
+        while (!temp.empty()) {
             chains.push(temp.front());
             temp.pop();
         }

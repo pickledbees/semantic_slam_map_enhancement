@@ -1,0 +1,5 @@
+<launch>
+    <rosparam file="$(find landmark_extractor)/params/markov_matcher.yaml" command="load"/>
+    <node pkg="landmark_extractor" type="landmark_extractor_matcher_node" name="matcher_node"
+          output="screen"/>
+</launch>
