@@ -23,14 +23,15 @@ public:
 
     void insertCoord(FloorPlanCoord coord);
 
-    bool populateFromImage(const std::string &filePath);    //image must be rgb, and only landmarks should be coloured
+    bool populateFromImage(const std::string &filePath,
+                           int extractionMode);    //image must be rgb, and only landmarks should be coloured
 
     std::vector<FloorPlanCoord> getCoords(uint8_t r, uint8_t g, uint8_t b);
 
     std::string getSummary();
 
 private:
-    static FloorPlanCoord getCentre(int colStart, int rowStart, cv::Mat &image, cv::Mat &visited);
+    static FloorPlanCoord getCentre(int colStart, int rowStart, cv::Mat &image, cv::Mat &visited, int extractionMode);
 
     std::unordered_map<int, std::vector<FloorPlanCoord>> map_;
 };

@@ -46,6 +46,8 @@ void MarkovMatcherChain::appendCoord(int *pattern, std::vector<landmark_extracto
     sum.ySquare = sum.ySquare + dy * dy;
     correlation = (size * sum.xy - sum.x * sum.y) /
                   sqrt((size * sum.xSquare - sum.x * sum.x) * (size * sum.ySquare - sum.y * sum.y));
+    m = (size * sum.xy - sum.x * sum.y) / (size * sum.xSquare - sum.x * sum.x);
+    b = sum.y / size - m * sum.x / size;
 }
 
 std::string MarkovMatcherChain::getSummary() const {
@@ -105,6 +107,7 @@ MatchResults MarkovMatcher::match(landmark_extractor::ExtractorLandmarks &landma
     //j is know indicator of how many elements there are in the pattern
     if (j < 2) return {};    //cannot perform match if filtered < 2;
 
+    //TODO: change up the way the coords are arranged
     //line up the landmarks (may remove since not really required)
     int *pattern = new int[j];  //indexes of landmarks in order
     int prev, k, closest;

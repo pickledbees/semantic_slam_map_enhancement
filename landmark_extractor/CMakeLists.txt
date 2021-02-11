@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         tf2_ros
         tf2
+        image_transport
+        cv_bridge
         )
 
 ## System dependencies are found with CMake's conventions
@@ -146,7 +148,8 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/landmark_extractor_node.cpp)
 add_executable(${PROJECT_NAME}_node src/extractor_landmark.cpp src/extractor.cpp src/extractor_node.cpp)
 add_executable(${PROJECT_NAME}_matcher_node src/markov_matcher_node.cpp src/markov_matcher.cpp src/semantic_floorplan.cpp src/label_service.cpp)
-add_executable(${PROJECT_NAME}_visualiser_node src/visualiser_node.cpp src/extractor.cpp src/extractor_landmark.cpp)
+add_executable(${PROJECT_NAME}_landmark_visualiser_node src/landmark_visualiser_node.cpp src/extractor.cpp src/extractor_landmark.cpp)
+add_executable(${PROJECT_NAME}_matcher_visualiser_node src/matcher_visualiser_node.cpp src/label_service.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -164,7 +167,8 @@ add_executable(${PROJECT_NAME}_visualiser_node src/visualiser_node.cpp src/extra
 # )
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}_matcher_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES} ${OpenCV_LIBS})
-target_link_libraries(${PROJECT_NAME}_visualiser_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_landmark_visualiser_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_matcher_visualiser_node ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 #############
 ## Install ##

@@ -18,15 +18,15 @@ struct MatchResults {
 
 class MarkovMatcherChain {
 public:
-    explicit MarkovMatcherChain(FloorPlanCoord head);
-
-    //MarkovMatcherChain(const MarkovMatcherChain &c);
-
     std::vector<FloorPlanCoord> coords;
     double correlation = 1;
+    double b = 0;
+    double m = 0;
     struct {
-        double x = 0, y = 0, xy = 0, xSquare = 0, ySquare = 0;
+        double x, y, xSquare, ySquare, xy;
     } sum;
+
+    explicit MarkovMatcherChain(FloorPlanCoord head);
 
     friend bool operator<(const MarkovMatcherChain &c1, const MarkovMatcherChain &c2);
 

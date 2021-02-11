@@ -2,7 +2,7 @@
     <arg name="visualiser" default="false"/>
     <rosparam file="$(find landmark_extractor)/params/landmark_extractor.yaml" command="load"/>
     <node pkg="landmark_extractor" type="landmark_extractor_node" name="landmark_extractor_node" output="screen"/>
-    <node if="$(arg visualiser)" pkg="landmark_extractor" type="landmark_extractor_visualiser_node"
+    <node if="$(arg visualiser)" pkg="landmark_extractor" type="landmark_extractor_landmark_visualiser_node"
           name="landmark_extractor_visualiser"
           output="screen"/>
 </launch>

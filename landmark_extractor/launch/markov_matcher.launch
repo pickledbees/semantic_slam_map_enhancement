@@ -1,5 +1,9 @@
 <launch>
+    <arg name="visualiser" default="false"/>
     <rosparam file="$(find landmark_extractor)/params/markov_matcher.yaml" command="load"/>
     <node pkg="landmark_extractor" type="landmark_extractor_matcher_node" name="matcher_node"
+          output="screen"/>
+    <node if="$(arg visualiser)" pkg="landmark_extractor" type="landmark_extractor_matcher_visualiser_node"
+          name="matcher_visualiser"
           output="screen"/>
 </launch>

@@ -1,7 +1,10 @@
 matcher:
   top: 3
   min_correlation_threshold: -2 #[-1, 1] set to <-1 to consider all chains
-  max_buffer_size: 10
+  max_buffer_size: 20
   floorplan_file_path: "/home/han/Workspace/catkin_ws/floorplans/room.bmp"
+  floorplan_landmark_extraction_mode: 1         # 0: aggregated, 1: precise
   match_results_topic: "/match_results"
   landmarks_topic: "/landmarks"
+
+  visualiser_image_topic: "/match_results_image"

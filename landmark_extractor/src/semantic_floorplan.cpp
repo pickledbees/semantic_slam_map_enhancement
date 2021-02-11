@@ -16,46 +16,56 @@ void SemanticFloorPlan::insertCoord(FloorPlanCoord coord) {
     map_[coord.hash].push_back(coord);
 }
 
-FloorPlanCoord SemanticFloorPlan::getCentre(int colStart, int rowStart, cv::Mat &image, cv::Mat &visited) {
-    std::stack<cv::Point> stack;
-    stack.push(cv::Point(colStart, rowStart));
+FloorPlanCoord
+SemanticFloorPlan::getCentre(int colStart, int rowStart, cv::Mat &image, cv::Mat &visited, int extractionMode) {
+    if (extractionMode == 1) {
+        FloorPlanCoord coord{};
+        auto pixel = image.at<cv::Vec3b>(rowStart, colStart);
 
-    cv::Vec3b pixel = image.at<cv::Vec3b>(rowStart, colStart);
-    int hash = LabelService::RGBToIntHash(pixel[2], pixel[1], pixel[0]);
+        coord.x = colStart;
+        coord.y = rowStart;
+        coord.hash = LabelService::RGBToIntHash(pixel[2], pixel[1], pixel[0]);
+        return coord;
+    } else {
+        std::stack<cv::Point> stack;
+        stack.push(cv::Point(colStart, rowStart));
 
-    double sumCol = 0, sumRow = 0;
-    int col, row, count = 0, boundCols = image.cols - 1, boundRows = image.rows - 1;
-    while (!stack.empty()) {
-        col = stack.top().x;
-        row = stack.top().y;
-        stack.pop();
+        auto pixel = image.at<cv::Vec3b>(rowStart, colStart);
+        int hash = LabelService::RGBToIntHash(pixel[2], pixel[1], pixel[0]);
 
-        pixel = image.at<cv::Vec3b>(row, col);
+        double sumCol = 0, sumRow = 0;
+        int col, row, count = 0, boundCols = image.cols - 1, boundRows = image.rows - 1;
+        while (!stack.empty()) {
+            col = stack.top().x;
+            row = stack.top().y;
+            stack.pop();
 
-        if (visited.at<unsigned char>(row, col) == 0 &&
-            LabelService::RGBToIntHash(pixel[2], pixel[1], pixel[0]) == hash) {
-            sumCol += col;
-            sumRow += row;
-            count++;
-            visited.at<unsigned char>(row, col) = 1;
+            pixel = image.at<cv::Vec3b>(row, col);
 
-            if (col > 0) stack.push(cv::Point(col - 1, row));
-            if (col < boundCols) stack.push(cv::Point(col + 1, row));
-            if (row > 0) stack.push(cv::Point(col, row - 1));
-            if (row < boundRows) stack.push(cv::Point(col, row + 1));
+            if (visited.at<unsigned char>(row, col) == 0 &&
+                LabelService::RGBToIntHash(pixel[2], pixel[1], pixel[0]) == hash) {
+                sumCol += col;
+                sumRow += row;
+                count++;
+                visited.at<unsigned char>(row, col) = 1;
+
+                if (col > 0) stack.push(cv::Point(col - 1, row));
+                if (col < boundCols) stack.push(cv::Point(col + 1, row));
+                if (row > 0) stack.push(cv::Point(col, row - 1));
+                if (row < boundRows) stack.push(cv::Point(col, row + 1));
+            }
         }
+
+        FloorPlanCoord coord{};
+        coord.x = sumCol / count;
+        coord.y = sumRow / count;
+        coord.hash = hash;
+
+        return coord;
     }
-
-    FloorPlanCoord coord{};
-    coord.x = sumCol / count;
-    coord.y = sumRow / count;
-    coord.hash = hash;
-
-    return coord;
 }
 
-//with blob detection, requires c-style access
-bool SemanticFloorPlan::populateFromImage(const std::string &filePath) {
+bool SemanticFloorPlan::populateFromImage(const std::string &filePath, int extractionMode) {
     cv::Mat image = cv::imread(filePath, cv::IMREAD_COLOR);
 
     if (image.empty()) return false;
@@ -70,7 +80,7 @@ bool SemanticFloorPlan::populateFromImage(const std::string &filePath) {
         auto pixel = *it;
         if (visited.at<unsigned char>(it.pos().y, it.pos().x) == 0 &&
             LabelService::isLandmark(pixel[2], pixel[1], pixel[0])) {
-            auto coord = getCentre(it.pos().x, it.pos().y, image, visited);
+            auto coord = getCentre(it.pos().x, it.pos().y, image, visited, extractionMode);
             insertCoord(coord);
         }
     }
