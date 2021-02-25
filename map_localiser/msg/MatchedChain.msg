@@ -1,0 +1,2 @@
+float64 correlation
+map_localiser/MatchedChainElement[] elements

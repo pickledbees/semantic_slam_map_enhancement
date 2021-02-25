@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(landmark_extractor)
+project(map_localiser)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -11,13 +11,15 @@ find_package(octomap REQUIRED)
 find_package(OpenCV REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
+        cv_bridge
+        image_transport
+        message_generation
         octomap_msgs
         roscpp
-        tf2_ros
+        std_msgs
         tf2
-        image_transport
-        cv_bridge
-        )
+        tf2_ros
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -57,9 +59,9 @@ add_message_files(
         FILES
         ExtractorLandmark.msg
         ExtractorLandmarks.msg
-        FloorPlanCoordMsg.msg
-        ChainCorrelationPairMsg.msg
-        MatchResultsMsg.msg
+        MatchedChain.msg
+        MatchedChainElement.msg
+        MatchResult.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -77,10 +79,11 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   std_msgs
- )
+generate_messages(
+        DEPENDENCIES
+        std_msgs
+#   octomap_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -113,9 +116,8 @@ add_message_files(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
         INCLUDE_DIRS include
-        CATKIN_DEPENDS octomap_msgs roscpp tf2 tf2_ros message_runtime
-        LIBRARIES landmark_extractor
-        #  DEPENDS system_lib
+        LIBRARIES map_localiser
+        CATKIN_DEPENDS cv_bridge image_transport octomap_msgs roscpp tf2 tf2_ros message_runtime
         DEPENDS octomap
 )
 
@@ -134,7 +136,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/landmark_extractor.cpp
+#   src/${PROJECT_NAME}/map_localiser.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -145,11 +147,21 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/landmark_extractor_node.cpp)
-add_executable(${PROJECT_NAME}_node src/extractor_landmark.cpp src/extractor.cpp src/extractor_node.cpp)
-add_executable(${PROJECT_NAME}_matcher_node src/markov_matcher_node.cpp src/markov_matcher.cpp src/semantic_floorplan.cpp src/label_service.cpp)
-add_executable(${PROJECT_NAME}_landmark_visualiser_node src/landmark_visualiser_node.cpp src/extractor.cpp src/extractor_landmark.cpp)
-add_executable(${PROJECT_NAME}_matcher_visualiser_node src/matcher_visualiser_node.cpp src/label_service.cpp)
+# add_executable(${PROJECT_NAME}_node src/map_localiser_node.cpp)
+add_executable(${PROJECT_NAME}_landmark_extractor_node
+        src/LandmarkExtractorNode.cpp
+        src/LandmarkExtractor.cpp
+        src/ExtractorLandmarkWrapper.cpp
+        src/LabelService.cpp
+        )
+
+add_executable(${PROJECT_NAME}_coordinates_matcher_node
+        src/CoordinatesMatcherNode.cpp
+        src/CoordinatesMatcher.cpp
+        src/Floorplan.cpp
+        src/CorrelationChain.cpp
+        src/LabelService.cpp
+        )
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -165,10 +177,9 @@ add_executable(${PROJECT_NAME}_matcher_visualiser_node src/matcher_visualiser_no
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
-target_link_libraries(${PROJECT_NAME}_matcher_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES} ${OpenCV_LIBS})
-target_link_libraries(${PROJECT_NAME}_landmark_visualiser_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
-target_link_libraries(${PROJECT_NAME}_matcher_visualiser_node ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME}_landmark_extractor_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_coordinates_matcher_node ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
 #############
 ## Install ##
 #############
@@ -216,7 +227,7 @@ target_link_libraries(${PROJECT_NAME}_matcher_visualiser_node ${catkin_LIBRARIES
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_landmark_extractor.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_map_localiser.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
