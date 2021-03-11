@@ -1,10 +1,10 @@
 //
-// Created by han on 8/2/21.
+// Created by han on 25/2/21.
 //
 
 #include <ros/ros.h>
-#include <landmark_extractor/label_service.h>
-#include <landmark_extractor/MatchResultsMsg.h>
+#include <map_localiser/LabelService.h>
+#include <map_localiser/MatchResult.h>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <stack>
@@ -19,28 +19,20 @@ class Visualiser {
     };
 public:
     explicit Visualiser(ros::NodeHandle &nh) : nh_(nh) {
-        std::string imageTopic;
-        std::string matchResultsTopic;
-        nh_.getParam("matcher/visualiser_image_topic", imageTopic);
-        nh_.getParam("matcher/match_results_topic", matchResultsTopic);
-
         loadImage();
 
+        nh.getParam("/matcher/visualiser/image_topic", image_topic_);
+        nh.getParam("/matcher/match_result_topic", match_result_topic_);
         image_transport::ImageTransport it(nh_);
-        pub_ = it.advertise(imageTopic, 1);
-        sub_ = nh_.subscribe(matchResultsTopic, 1, &Visualiser::visualise, this);   //get the latest message always
+        pub_ = it.advertise(image_topic_, 1);
+        sub_ = nh.subscribe(match_result_topic_, 1, &Visualiser::visualise, this);
     }
 
     void loadImage() {
-        nh_.getParam("matcher/floorplan_file_path", file_path_);
-        ROS_INFO("loading image into matcher visualiser from '%s'...", file_path_.c_str());
+        nh_.getParam("/matcher/visualiser/floorplan_file_path", file_path_);
 
-        if (image_loaded_) {
-            ROS_INFO("Image from '%s' already loaded", file_path_.c_str());
-            return;
-        }
+        ROS_INFO("reading image file");
 
-        //read in image
         image_ = cv::imread(file_path_, cv::IMREAD_COLOR);
 
         if (image_.empty()) {
@@ -49,31 +41,30 @@ public:
         }
 
         if (image_.channels() != 3) {
-            ROS_WARN("image not RGB");
+            ROS_WARN("image not in RGB");
             return;
         }
 
-        image_loaded_ = true;
-        ROS_INFO("image loaded into matcher visualiser");
+        ROS_INFO("loaded image into visualiser");
     }
 
-    void visualise(landmark_extractor::MatchResultsMsg results) {
-
-        if (!image_loaded_) {
-            ROS_WARN("results received but image not loaded to render markers");
+    void visualise(map_localiser::MatchResult result) {
+        if (image_.empty()) {
+            ROS_WARN("results received but no image to load");
             return;
         }
 
-        if (results.chains.empty()) return;
+        if (result.chains.empty()) return;
 
-        //draw detection on image
         std::stack<Pixel> altered;
-        auto coords = results.chains.back().chain;
+        auto coords = result.chains.back().elements;
         for (const auto &coord : coords) {
             auto &pixel = image_.at<cv::Vec3b>(cv::Point(coord.x, coord.y));
 
-            //cache pixel original value
+            //cache
             Pixel alteredPixel{};
+            alteredPixel.x = coord.x;
+            alteredPixel.y = coord.y;
             alteredPixel.x = coord.x;
             alteredPixel.y = coord.y;
             alteredPixel.r = pixel[2];
@@ -81,13 +72,13 @@ public:
             alteredPixel.b = pixel[0];
             altered.push(alteredPixel);
 
-            //mark it red
+            //mark
             pixel[2] = 255;
             pixel[1] = 0;
             pixel[0] = 0;
         }
 
-        //publish as image
+        //publish
         cv_bridge::CvImagePtr ptr(new cv_bridge::CvImage);
         ptr->encoding = "bgr8";
         ptr->header.stamp = ros::Time::now();
@@ -95,7 +86,7 @@ public:
         ptr->image = image_;
         pub_.publish(ptr->toImageMsg());
 
-        //revert changes
+        //restore
         while (!altered.empty()) {
             auto alteredPixel = altered.top();
             altered.pop();
@@ -108,7 +99,8 @@ public:
     }
 
 private:
-    bool image_loaded_ = false;
+    std::string image_topic_;
+    std::string match_result_topic_;
     std::string file_path_;
     cv::Mat image_;
 
@@ -124,4 +116,3 @@ int main(int argc, char **argv) {
     ros::spin();
     return 0;
 }
-

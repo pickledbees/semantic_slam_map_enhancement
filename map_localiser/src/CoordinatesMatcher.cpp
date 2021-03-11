@@ -19,11 +19,9 @@ CoordinatesMatcher::match(const map_localiser::ExtractorLandmarks &landmarks, Fl
                  [&f = fp](map_localiser::ExtractorLandmark l) { return f.hasHash(l.hash); });
 
     //cannot perform any meaningful correlation if below min chain length
-    if (pattern.size() < min_chain_length_) return {};
+    if (pattern.size() < min_chain_length_ || pattern.size() < 3) return {};
 
-    //do some kind of mixing up to space out the pattern?
-
-    std::priority_queue<CorrelationChain, std::vector<CorrelationChain>, std::greater<>> q;
+    std::priority_queue<CorrelationChain, std::vector<CorrelationChain>, std::greater<>> q; //sorts with lowest correlation on top
     map_localiser::ExtractorLandmark l;
     std::vector<Floorplan::Coord> candidates;
 

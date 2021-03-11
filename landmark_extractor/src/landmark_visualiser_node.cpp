@@ -8,7 +8,7 @@
 class Visualiser {
 public:
     explicit Visualiser(ros::NodeHandle &nh) : nh_(nh) {
-        nh_.getParam("/extractor/landmark_topic", landmark_topic_);
+        nh_.getParam("/extractor/landmarks_topic", landmark_topic_);
         nh_.getParam("/extractor/visualiser_point_scale", point_scale_);
         nh_.getParam("/extractor/visualiser_text_scale", text_scale_);
         nh_.getParam("/extractor/visualiser_namespace", namespace_);

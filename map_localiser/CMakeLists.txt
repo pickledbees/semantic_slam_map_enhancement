@@ -163,6 +163,16 @@ add_executable(${PROJECT_NAME}_coordinates_matcher_node
         src/LabelService.cpp
         )
 
+add_executable(${PROJECT_NAME}_landmark_visualiser_node
+        src/LandmarkExtractorVisualiser.cpp
+        src/LabelService.cpp
+        )
+
+add_executable(${PROJECT_NAME}_match_visualiser_node
+        src/CoordinatesMatcherVisualiser.cpp
+        src/LabelService.cpp
+        )
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -179,6 +189,8 @@ add_executable(${PROJECT_NAME}_coordinates_matcher_node
 # )
 target_link_libraries(${PROJECT_NAME}_landmark_extractor_node ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}_coordinates_matcher_node ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME}_landmark_visualiser_node ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_match_visualiser_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##

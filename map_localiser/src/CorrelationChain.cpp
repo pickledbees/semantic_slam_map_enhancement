@@ -44,17 +44,26 @@ distanceBetweenCoords(const CorrelationChain::Element &a, const CorrelationChain
 
 void CorrelationChain::appendCoord(double x, double y, int hash) {
     size_t n = elements_.size() + 1;
+    if (n > pattern_.size()) return;    //do not perform match if n is out of bounds
 
-    if (n > pattern_.size()) return;
     elements_.emplace_back(x, y, hash);
 
-    double dx = distanceBetweenLandmarks(pattern_[n - 1], pattern_[n - 2]);
-    double dy = distanceBetweenCoords(elements_[n - 1], elements_[n - 2]);
-    sumX_ += dx;
-    sumY_ += dy;
-    sumXY_ += dx * dy;
-    sumXX_ += dx * dx;
-    sumYY_ += dy * dy;
+    //get sums
+    auto p = pattern_[n - 1];
+    auto e = elements_[n - 1];
+
+    //perform correlation with other points
+    for (int i = 0; i < n - 1; i++) {
+        double dx = distanceBetweenLandmarks(p, pattern_[i]);
+        double dy = distanceBetweenCoords(e, elements_[i]);
+        sumX_ += dx;
+        sumY_ += dy;
+        sumXY_ += dx * dy;
+        sumXX_ += dx * dx;
+        sumYY_ += dy * dy;
+        //maybe cache the distances to speed up execution?
+    }
+
     correlation_ = (n * sumXY_ - sumX_ * sumY_) / sqrt((n * sumXX_ - sumX_ * sumX_) * (n * sumYY_ - sumY_ * sumY_));
 }
 
@@ -75,21 +84,38 @@ map_localiser::MatchedChain CorrelationChain::toMatchedChain() const {
     double m = (n * sumXY_ - sumX_ * sumY_) / (n * sumXX_ - sumX_ * sumX_);
     double b = sumY_ / n - m * sumX_ / n;
 
+    /*
+     * each landmark in the pattern is matched to a floorplan coord
+     * each landmark can produce a set of x values, with each x value having a corresponding 'ideal' y value
+     * each x value has a y value derived from the floorplan coord calcs
+     * each x value is derived from calculating the distance of that landmark to the other landmarks
+         * its matched y value is the distance between corresponding floorplan coords
+         * its ideal y value is derived from the line
+         * the error of that x value is the distance between the matched and ideal y values
+     * the error of that match is the average error of its x values
+     */
+
     map_localiser::MatchedChain chain;
     chain.correlation = correlation_;
-    for (const auto &e : elements_) {
+
+    //error calculation
+    for (int i = 0; i < pattern_.size(); i++) {
+        double totalError = 0;
+        auto p = pattern_[i];
+        auto e = elements_[i];
+        for (int j = 0; j < pattern_.size(); j++) {
+            if (j == i) continue;
+            double x = distanceBetweenLandmarks(p, pattern_[j]);
+            double predY = m * x + b;
+            double y = distanceBetweenCoords(e, elements_[j]);
+            totalError = totalError + abs(predY - y);
+        }
         map_localiser::MatchedChainElement mce;
         mce.x = e.x_;
         mce.y = e.y_;
         mce.hash = e.hash_;
-        mce.error = calculateError(m * e.x_ + b, e.y_);
-        chain.elements.push_back(mce);
+        mce.error = totalError / (double) (pattern_.size() - 1);
     }
 
     return chain;
-}
-
-//TODO: maybe try using gaussian error?
-double CorrelationChain::calculateError(double yPred, double yActual) const {
-    return yPred - yActual;
 }

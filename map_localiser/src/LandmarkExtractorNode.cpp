@@ -16,7 +16,7 @@ LandmarkExtractorNode::LandmarkExtractorNode(ros::NodeHandle &nh) : nh_(nh), tf_
     nh_.getParam("/extractor/camera_frame_id", camera_frame_id_);
     nh_.getParam("/extractor/octomap_topic", octomap_topic_);
     nh_.getParam("/extractor/octomap_frame_id", octomap_frame_id_);
-    nh_.getParam("/extractor/landmark_topic", landmark_topic_);
+    nh_.getParam("/extractor/landmarks_topic", landmark_topic_);
     nh_.getParam("/extractor/buffer_size", buffer_size_);
     nh_.getParam("/extractor/search_radius", search_radius_);
     nh_.getParam("/extractor/strategy", strategy_);

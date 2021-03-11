@@ -30,7 +30,7 @@ private:
 
     size_t buffer_size_ = 10;
     double search_radius_ = 10000;
-    int strategy_ = 1;
+    int strategy_ = 1;  //0: nearest, 1: unique
 };
 
 

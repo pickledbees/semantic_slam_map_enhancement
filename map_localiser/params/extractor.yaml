@@ -1,0 +1,13 @@
+extractor:
+  camera_frame_id: "camera_rgb_optical_frame"
+  octomap_topic: "/octomap_full"
+  octomap_frame_id: "world"
+  landmarks_topic: "/landmarks"
+  buffer_size: 10 #number of landmarks to return
+  search_radius: 10000  #raycast distance in cells (arbitrary) to search for landmarks
+  strategy: 1 #0: nearest, 1: unique
+  visualiser:
+    point_scale: 1
+    text_scale: 1
+    namespace: "extractor_visualiser"
+    marker_array_topic: "/extractor_visualiser_marker_array"

@@ -1,0 +1,7 @@
+<launch>
+    <arg name="visualiser" default="false"/>
+    <rosparam file="$(find map_localiser)/params/matcher.yaml"/>
+    <node pkg="map_localiser" type="map_localiser_coordinates_matcher_node" name="matcher_node" output="screen"/>
+    <node if="$(arg visualiser)" pkg="map_localiser" type="map_localiser_match_visualiser_node"
+          name="landmark_visualiser" output="screen"/>
+</launch>

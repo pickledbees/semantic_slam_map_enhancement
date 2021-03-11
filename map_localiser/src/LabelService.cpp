@@ -10,7 +10,7 @@ int LabelService::RGBToHash(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 bool LabelService::isLandmark(int hash) {
-    return trivial_.find(hash) != trivial_.end();
+    return map_.find(hash) != map_.end() && trivial_.find(hash) == trivial_.end();
 }
 
 std::string LabelService::hashToLabel(int hash) {

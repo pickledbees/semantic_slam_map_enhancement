@@ -35,8 +35,6 @@ public:
     map_localiser::MatchedChain toMatchedChain() const;
 
 private:
-    double calculateError(double yPred, double yActual) const;
-
     std::vector<map_localiser::ExtractorLandmark> &pattern_;
     double sumX_ = 0, sumY_ = 0, sumXX_ = 0, sumYY_ = 0, sumXY_ = 0, correlation_ = 1;
     std::vector<Element> elements_;
