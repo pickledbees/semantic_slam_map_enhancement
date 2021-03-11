@@ -20,13 +20,15 @@ LandmarkExtractor::LandmarkExtractor(size_t bufferSize, double searchRadius, int
 
 map_localiser::ExtractorLandmarks
 LandmarkExtractor::extract(octomap_msgs::OctomapConstPtr &msg, const geometry_msgs::TransformStamped &tf) {
+    map_localiser::ExtractorLandmarks l;
     switch (strategy_) {
         case 0:
-            return extractNearest(msg, tf);
+            l = extractNearest(msg, tf);
         case 1:
         default:
-            return extractUnique(msg, tf);
+            l = extractUnique(msg, tf);
     }
+    return l;
 }
 
 map_localiser::ExtractorLandmarks
@@ -81,7 +83,7 @@ LandmarkExtractor::extractUnique(octomap_msgs::OctomapConstPtr &msg, const geome
 
         auto pair = map.find(hash);
         if (pair == map.end() || (pair->second.getDepth() >= it.getDepth() && pair->second.getDistance() > d))
-            map.insert({hash, ExtractorLandmarkWrapper(it.getX(), it.getY(), it.getZ(), d, it.getDepth())});
+            map.insert({hash, ExtractorLandmarkWrapper(it.getX(), it.getY(), it.getZ(), hash, d, it.getDepth())});
     }
 
     for (const auto &pair : map) q.push(pair.second);

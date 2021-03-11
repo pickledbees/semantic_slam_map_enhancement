@@ -21,10 +21,10 @@ public:
 
     map_localiser::ExtractorLandmark getLandmark() const;
 
-private:
     double x_, y_, z_, distance_;
     int hash_;
     unsigned int depth_;
+private:
 };
 
 

@@ -31,4 +31,5 @@ map_localiser::ExtractorLandmark ExtractorLandmarkWrapper::getLandmark() const {
     l.y = y_;
     l.z = z_;
     l.hash = hash_;
+    return l;
 }

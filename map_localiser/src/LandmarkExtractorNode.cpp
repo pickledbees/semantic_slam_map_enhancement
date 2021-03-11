@@ -35,6 +35,7 @@ LandmarkExtractorNode::LandmarkExtractorNode(ros::NodeHandle &nh) : nh_(nh), tf_
 void LandmarkExtractorNode::extractionCallback(octomap_msgs::OctomapConstPtr msg) {
     auto tf = tf_buffer_.lookupTransform(octomap_frame_id_, camera_frame_id_, msg.get()->header.stamp);
     auto l = extractor_->extract(msg, tf);
+    ROS_INFO("found %zu landmarks", l.landmarks.size());
     l.header.frame_id = octomap_frame_id_;
     l.header.stamp = ros::Time::now();
     landmark_pub_.publish(l);
