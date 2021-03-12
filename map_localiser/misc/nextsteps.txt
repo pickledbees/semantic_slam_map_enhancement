@@ -1,0 +1,101 @@
+Repo setup process
+Install ORB_SLAM2 dependencies
+1. Install Pangolin
+2. Install OpenCV
+3. Install Eigen (extract eigen to usr/local/include for global use)
+
+Install torch 0.4.0
+
+Install python dependencies (if setup.py fails to run)
+- ptssemseg has issues, look under their requirements.txt to manually install
+
+verify CUDA capability
+- lspci | grep -i nvidia
+
+Nvidia Driver issues
+- purge all nvidia drivers then install recommended driver
+	sudo apt-get remove --purge '^nvidia-.*' <-- to purge all drivers
+	ubuntu-drivers devices <-- to check for recommended installs
+	sudo ubuntu-drivers autoinstall <-- install recommended driver
+	nvidia-smi <-- check driver installation
+
+- install nvcc
+	sudo install nvcc <-- cuda installation
+
+
+Cuda installation
+- ubuntu-drivers autoinstall <- install compatible nvidia drivers
+- download .run file for toolkit installation
+- sudo sh the runfile (uncheck drivers, samples and demo)
+- add cuda to path (export PATH) <--from instructions
+- add lib64 to file in ld.so.conf <--from instructions
+
+set model path in param server (default is original repo owner's local path)
+
+Zed SDK install + Zed wrapper install
+
+installing python api for ZED
+- version not found when installing: manually edit the installer python script to point to correct version
+- use test script to obtain calibration settings
+
+Connecting ZED camera to slam
+- create launch file to wrap zed launch file
+- remap depth and rgb topics to topics read by slam
+- If ZED fails to connect (no GPU detected), shutdown and turn back on, do not use restart
+- parameter calibration
+	- downsample ZED image in zed_wrapper/params/common.yaml + change mode to VGA (lowest quality possible)
+		-> adjust resolution in semantic_slam/params/semantic_cloud.yaml: height, width, fx, fy, cx, cy fps
+		-> semantic_slam/params/zed.yaml: height, width, fx, fy, cx, cy
+- fps set to 30
+- features drop to 800 or 1000
+
+performance adjustments
+- features drop to 1000: semantic_slam/params/zed.yaml
+- downsample images: zed_wrapper/params/common.yaml --> refer to Connecting ZED camera to slam
+- decrease octomap resolution (set as 4cm / 0.04m): semantic_slam/params/octomap_generator.yaml
+
+LEARNT:
+- the resolution affects tracking, large resolutions perform very poorly, but also too small
+
+ISSUE:
+- messagefilter dropping everything for octomap server after adding the transformer node
+- transformer node is supposed to 
+
+tried:
+- 
+
+- generate map (ABN + hall) -> monday
+- from bag try to obtain the octree and position you occupy
+	- read paper again
+	- explore octree
+		- what do the colours mean? can I extract coordinates?
+		- how is my occupancy represented?
+- try making a map from the bag first?
+
+
+End goal, populate map with information from semantic cloud
+
+what data does the octree produced have?
+- semantic occupancy?
+- camera occupancy?
+- camera pose?
+if all the above is available, no need to worry about the repo implentation
+
+how to combine floor plan with octree?
+- how to sync floor plan with octree? (localisation issue)
+	- what features of floor plan can be linked to coords of octree?
+	- nn search?
+	- initial syncing?
+- how to map occupancy of octree to floor plan?
+	- solving previous problem solves this
+- how to map pose of camera to floor plan?
+	- pose not required?
+
+
+
+- see if messages are being processed
+- find some way to visualise the mappings
+
+RuntimeError: cuda runtime error (10) : invalid device ordinal at torch/csrc/cuda/Module.cpp:32
+- manually change the device id to 0;
+

@@ -14,8 +14,6 @@ class CoordinatesMatcherNode {
 public:
     explicit CoordinatesMatcherNode(const ros::NodeHandle &nh);
 
-    void loadFloorplan();
-
     void matchCallback(map_localiser::ExtractorLandmarks landmarks);
 
     ~CoordinatesMatcherNode();

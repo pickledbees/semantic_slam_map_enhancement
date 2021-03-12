@@ -15,9 +15,19 @@ int main(int argc, char **argv) {
 CoordinatesMatcherNode::CoordinatesMatcherNode(const ros::NodeHandle &nh) {
     ROS_INFO("initialising matcher node");
 
+    //floorplan init
     ROS_INFO("loading floorplan");
-    loadFloorplan();
+    std::string floorplan_file_path;
+    bool aggregate;
+    nh_.getParam("/matcher/floorplan_file_path", floorplan_file_path);
+    nh_.getParam("/matcher/floorplan_landmark_aggregation", aggregate);
+    fp_.loadFromFile(floorplan_file_path, aggregate);
+
+    if (fp_.hasError()) {
+        ROS_ERROR("failed to load floor plan: %s", fp_.getError().c_str());
+    }
     ROS_INFO("floorplan loaded");
+    ROS_INFO("%s", fp_.getSummary().c_str());
 
     //matcher parameters
     int top, strategy;
@@ -36,18 +46,6 @@ CoordinatesMatcherNode::CoordinatesMatcherNode(const ros::NodeHandle &nh) {
     pub_ = nh_.advertise<map_localiser::MatchResult>(match_result_topic_, 10);
 
     ROS_INFO("matcher node ready");
-}
-
-void CoordinatesMatcherNode::loadFloorplan() {
-    std::string floorplan_file_path;
-    bool aggregate;
-    nh_.getParam("/matcher/floorplan_file_path", floorplan_file_path);
-    nh_.getParam("/matcher/floorplan_landmark_aggregation", aggregate);
-    fp_.loadFromFile(floorplan_file_path, aggregate);
-
-    if (fp_.hasError()) {
-        ROS_WARN("failed to load floor plan: %s", fp_.getError().c_str());
-    }
 }
 
 void CoordinatesMatcherNode::matchCallback(map_localiser::ExtractorLandmarks landmarks) {

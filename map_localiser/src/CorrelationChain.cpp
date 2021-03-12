@@ -19,6 +19,7 @@ CorrelationChain::CorrelationChain(const CorrelationChain &c) : pattern_(c.patte
     sumXY_ = c.sumXY_;
     correlation_ = c.correlation_;
     elements_ = c.elements_;
+    n_ = c.n_;
 }
 
 CorrelationChain &CorrelationChain::operator=(const CorrelationChain &c) {
@@ -29,6 +30,7 @@ CorrelationChain &CorrelationChain::operator=(const CorrelationChain &c) {
     sumXY_ = c.sumXY_;
     correlation_ = c.correlation_;
     elements_ = c.elements_;
+    n_ = c.n_;
     return *this;
 }
 
@@ -43,28 +45,31 @@ distanceBetweenCoords(const CorrelationChain::Element &a, const CorrelationChain
 }
 
 void CorrelationChain::appendCoord(double x, double y, int hash) {
-    size_t n = elements_.size() + 1;
-    if (n > pattern_.size()) return;    //do not perform match if n is out of bounds
+    size_t len = elements_.size() + 1;
+    if (len > pattern_.size()) return;    //do not perform match if n is out of bounds
 
     elements_.emplace_back(x, y, hash);
 
     //get sums
-    auto p = pattern_[n - 1];
-    auto e = elements_[n - 1];
+    auto p = pattern_[len - 1];
+    auto e = elements_[len - 1];
 
     //perform correlation with other points
-    for (int i = 0; i < n - 1; i++) {
+    for (int i = 0; i < len - 1; i++) {
         double dx = distanceBetweenLandmarks(p, pattern_[i]);
         double dy = distanceBetweenCoords(e, elements_[i]);
-        sumX_ += dx;
-        sumY_ += dy;
-        sumXY_ += dx * dy;
-        sumXX_ += dx * dx;
-        sumYY_ += dy * dy;
+        sumX_ = sumX_ + dx;
+        sumY_ = sumY_ + dy;
+        sumXY_ = sumXY_ + dx * dy;
+        sumXX_ = sumXX_ + dx * dx;
+        sumYY_ += sumYY_ + dy * dy;
+        n_++;
         //maybe cache the distances to speed up execution?
     }
 
-    correlation_ = (n * sumXY_ - sumX_ * sumY_) / sqrt((n * sumXX_ - sumX_ * sumX_) * (n * sumYY_ - sumY_ * sumY_));
+    if (n_ > 1)
+        correlation_ =
+                (n_ * sumXY_ - sumX_ * sumY_) / sqrt((n_ * sumXX_ - sumX_ * sumX_) * (n_ * sumYY_ - sumY_ * sumY_));
 }
 
 bool CorrelationChain::operator<(const CorrelationChain &c) const {
@@ -118,4 +123,11 @@ map_localiser::MatchedChain CorrelationChain::toMatchedChain() const {
     }
 
     return chain;
+}
+
+std::string CorrelationChain::getSummary() const {
+    std::ostringstream stream;
+    stream << "sumX=" << sumX_ << " sumY=" << sumY_ << " sumXY=" << sumXY_ << " sumXX=" << sumXX_ << " sumYY=" << sumYY_
+           << " n=" << n_ << " correlation=" << correlation_ << " size=" << elements_.size();
+    return stream.str();
 }

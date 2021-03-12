@@ -1,0 +1,5 @@
+<launch>
+    <rosparam file="$(find map_localiser)/params/extractor.yaml"/>
+    <node pkg="map_localiser" type="map_localiser_landmark_visualiser_node"
+          name="landmark_visualiser" output="screen"/>
+</launch>

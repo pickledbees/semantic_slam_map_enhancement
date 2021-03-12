@@ -7,7 +7,7 @@ extractor:
   search_radius: 10000  #raycast distance in cells (arbitrary) to search for landmarks
   strategy: 1 #0: nearest, 1: unique
   visualiser:
-    point_scale: 1
-    text_scale: 1
+    point_scale: 0.5
+    text_scale: 0.5
     namespace: "extractor_visualiser"
     marker_array_topic: "/extractor_visualiser_marker_array"

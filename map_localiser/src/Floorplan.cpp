@@ -36,7 +36,8 @@ void Floorplan::loadFromFile(const std::string &filePath, bool aggregate) {
         for (; it < end; it++) {
             auto pixel = *it;
             int hash = LabelService::RGBToHash(pixel[2], pixel[1], pixel[0]);
-            insert(Floorplan::Coord(it.pos().x, it.pos().y, hash));
+            if (LabelService::isLandmark(hash))
+                insert(Floorplan::Coord(it.pos().x, it.pos().y, hash));
         }
     }
 
@@ -93,26 +94,35 @@ std::string Floorplan::getSummary() {
 }
 
 Floorplan::Coord Floorplan::getCentre(int colStart, int rowStart, cv::Mat &image, cv::Mat &visited) {
-    std::stack<cv::Point> stack;
-    stack.push(cv::Point(colStart, rowStart));
-
-    auto pixel = image.at<cv::Vec3b>(rowStart, colStart);
-    int hash = LabelService::RGBToHash(pixel[2], pixel[1], pixel[0]);
 
     double sumCol = 0, sumRow = 0;
     int col, row, count = 0, boundCols = image.cols - 1, boundRows = image.rows - 1;
 
-    //dfs to accumulate centre
-    if (visited.at<unsigned char>(row, col) == 0 && LabelService::RGBToHash(pixel[2], pixel[1], pixel[0]) == hash) {
-        sumCol += col;
-        sumRow += row;
-        count++;
-        visited.at<unsigned char>(row, col) = 1;
+    auto pixel = image.at<cv::Vec3b>(rowStart, colStart);
+    int hash = LabelService::RGBToHash(pixel[2], pixel[1], pixel[0]);
 
-        if (col > 0) stack.push(cv::Point(col - 1, row));
-        if (col < boundCols) stack.push(cv::Point(col + 1, row));
-        if (row > 0) stack.push(cv::Point(col, row - 1));
-        if (row < boundRows) stack.push(cv::Point(col, row + 1));
+    std::stack<cv::Point> stack;
+    stack.push(cv::Point(colStart, rowStart));
+
+    //dfs to accumulate centre
+    while (!stack.empty()) {
+        col = stack.top().x;
+        row = stack.top().y;
+        stack.pop();
+
+        pixel = image.at<cv::Vec3b>(row, col);
+
+        if (visited.at<unsigned char>(row, col) == 0 && LabelService::RGBToHash(pixel[2], pixel[1], pixel[0]) == hash) {
+            sumCol += col;
+            sumRow += row;
+            count++;
+            visited.at<unsigned char>(row, col) = 1;
+
+            if (col > 0) stack.push(cv::Point(col - 1, row));
+            if (col < boundCols) stack.push(cv::Point(col + 1, row));
+            if (row > 0) stack.push(cv::Point(col, row - 1));
+            if (row < boundRows) stack.push(cv::Point(col, row + 1));
+        }
     }
 
     Floorplan::Coord coord(sumCol / count, sumRow / count, hash);

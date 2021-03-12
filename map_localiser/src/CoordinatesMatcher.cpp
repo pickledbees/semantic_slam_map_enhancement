@@ -19,6 +19,7 @@ CoordinatesMatcher::match(const map_localiser::ExtractorLandmarks &landmarks, Fl
                  [&f = fp](map_localiser::ExtractorLandmark l) { return f.hasHash(l.hash); });
 
     //cannot perform any meaningful correlation if below min chain length
+    //TODO: fix return
     if (pattern.size() < min_chain_length_ || pattern.size() < 3) return {};
 
     std::priority_queue<CorrelationChain, std::vector<CorrelationChain>, std::greater<>> q; //sorts with lowest correlation on top
@@ -36,7 +37,6 @@ CoordinatesMatcher::match(const map_localiser::ExtractorLandmarks &landmarks, Fl
     for (int i = 1; i < pattern.size(); i++) {
         l = pattern[i];
         candidates = fp.getCoords(l.hash);
-
         while (!q.empty()) {
             CorrelationChain chain = q.top();
             q.pop();
