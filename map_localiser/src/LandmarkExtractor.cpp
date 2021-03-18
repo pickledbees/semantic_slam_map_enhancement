@@ -71,6 +71,13 @@ LandmarkExtractor::extractUnique(octomap_msgs::OctomapConstPtr &msg, const geome
     float cy = tf.transform.translation.y;
     float cz = tf.transform.translation.z;
 
+    // check translation
+    ROS_INFO("camera \nx=%f\ny=%f\nz=%f\n", cx - ox, cy - oy, cz - oz);
+    ox = cx;
+    oy = cy;
+    oz = cz;
+    // x and z are the lateral components
+
     std::unordered_map<int, ExtractorLandmarkWrapper> map;
     std::priority_queue<ExtractorLandmarkWrapper, std::vector<ExtractorLandmarkWrapper>, std::less<>> q;
 

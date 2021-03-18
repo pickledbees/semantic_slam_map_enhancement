@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
         message_generation
         octomap_msgs
         roscpp
+        rospy
         std_msgs
         tf2
         tf2_ros
@@ -160,6 +161,9 @@ add_executable(${PROJECT_NAME}_coordinates_matcher_node
         src/CoordinatesMatcher.cpp
         src/Floorplan.cpp
         src/CorrelationChain.cpp
+        src/WelfordCorrelationChain.cpp
+        src/RunningCovariance.cpp
+        src/RunningVariance.cpp
         src/LabelService.cpp
         )
 
@@ -201,10 +205,10 @@ target_link_libraries(${PROJECT_NAME}_match_visualiser_node ${catkin_LIBRARIES})
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# catkin_install_python(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+catkin_install_python(PROGRAMS
+        src/plotter.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html

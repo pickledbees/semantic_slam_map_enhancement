@@ -20,7 +20,7 @@ public:
 
     CorrelationChain(double x, double y, int hash, std::vector<map_localiser::ExtractorLandmark> &pattern);
 
-    CorrelationChain(const CorrelationChain &c);
+//    CorrelationChain(const CorrelationChain &c);
 
     void appendCoord(double x, double y, int hash);
 

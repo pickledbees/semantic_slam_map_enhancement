@@ -3,6 +3,7 @@
 //
 
 #include <map_localiser/CorrelationChain.h>
+#include <ros/ros.h>
 
 CorrelationChain::Element::Element(double x, double y, int hash) : x_(x), y_(y), hash_(hash) {}
 
@@ -11,16 +12,16 @@ CorrelationChain::CorrelationChain(double x, double y, int hash,
     elements_.emplace_back(x, y, hash);
 }
 
-CorrelationChain::CorrelationChain(const CorrelationChain &c) : pattern_(c.pattern_) {
-    sumX_ = c.sumX_;
-    sumY_ = c.sumY_;
-    sumXX_ = c.sumXX_;
-    sumYY_ = c.sumYY_;
-    sumXY_ = c.sumXY_;
-    correlation_ = c.correlation_;
-    elements_ = c.elements_;
-    n_ = c.n_;
-}
+//CorrelationChain::CorrelationChain(const CorrelationChain &c) : pattern_(c.pattern_) {
+//    sumX_ = c.sumX_;
+//    sumY_ = c.sumY_;
+//    sumXX_ = c.sumXX_;
+//    sumYY_ = c.sumYY_;
+//    sumXY_ = c.sumXY_;
+//    correlation_ = c.correlation_;
+//    elements_ = c.elements_;
+//    n_ = c.n_;
+//}
 
 CorrelationChain &CorrelationChain::operator=(const CorrelationChain &c) {
     sumX_ = c.sumX_;
@@ -34,9 +35,10 @@ CorrelationChain &CorrelationChain::operator=(const CorrelationChain &c) {
     return *this;
 }
 
+//extract only the lateral distances
 inline double
 distanceBetweenLandmarks(const map_localiser::ExtractorLandmark &a, const map_localiser::ExtractorLandmark &b) {
-    return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+    return sqrt(pow(a.x - b.x, 2) + pow(a.z - b.z, 2));
 }
 
 inline double
@@ -86,8 +88,8 @@ double CorrelationChain::getCorrelation() const {
 
 map_localiser::MatchedChain CorrelationChain::toMatchedChain() const {
     int n = elements_.size();
-    double m = (n * sumXY_ - sumX_ * sumY_) / (n * sumXX_ - sumX_ * sumX_);
-    double b = sumY_ / n - m * sumX_ / n;
+    double m = (n_ * sumXY_ - sumX_ * sumY_) / (n_ * sumXX_ - sumX_ * sumX_);
+    double b = sumY_ / n_ - m * sumX_ / n_;
 
     /*
      * each landmark in the pattern is matched to a floorplan coord
@@ -120,7 +122,10 @@ map_localiser::MatchedChain CorrelationChain::toMatchedChain() const {
         mce.y = e.y_;
         mce.hash = e.hash_;
         mce.error = totalError / (double) (pattern_.size() - 1);
+        chain.elements.push_back(mce);
     }
+
+    ROS_INFO("len=%zu", pattern_.size());
 
     return chain;
 }

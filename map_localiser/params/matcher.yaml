@@ -3,10 +3,10 @@ matcher:
   strategy: 0 #currently unimplemented
   min_correlation_threshold: -100000 #minimum correlation of chain required, below which will be discarded
   min_chain_length: 3 #program puts lower bound as 3
-  max_buffer_size: 20 #maximum no. of chains to compute per pass
+  max_buffer_size: 50 #maximum no. of chains to compute per pass
   landmarks_topic: "/landmarks"
   match_result_topic: "/match_results"
-  floorplan_file_path: "/home/han/Workspace/catkin_ws/floorplans/room.bmp"
-  floorplan_landmark_aggregation: true  #aggregate contiguous pixels to find COM to use as landmark coordinate
+  floorplan_file_path: "/home/han/Workspace/catkin_ws/floorplans/roomn.bmp"
+  floorplan_landmark_aggregation: false  #aggregate contiguous pixels to find CoM to use as landmark coordinate
   visualiser:
     image_topic: "/matcher_visualiser_image"
