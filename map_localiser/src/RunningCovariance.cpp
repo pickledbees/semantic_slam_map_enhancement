@@ -4,8 +4,6 @@
 
 #include <map_localiser/RunningCovariance.h>
 
-//TODO: use Eigen to convert data structures to vectors
-
 void RunningCovariance::insert(double x, double y) {
     n_++;
     if (n_ == 1) {
@@ -19,7 +17,7 @@ void RunningCovariance::insert(double x, double y) {
         new_m_y = old_m_y + (y - old_m_y) / n_;
         new_s_xy = old_s_xy + (x - old_m_x) * (y - new_m_y);
         new_s_x = old_s_x + (x - old_m_x) * (x - new_m_x);
-        new_s_y = old_s_y + (x - old_m_y) * (x - new_m_y);
+        new_s_y = old_s_y + (y - old_m_y) * (y - new_m_y);
 
         old_m_x = new_m_x;
         old_m_y = new_m_y;
@@ -30,13 +28,13 @@ void RunningCovariance::insert(double x, double y) {
 }
 
 double RunningCovariance::covarianceXY() const {
-    return n_ > 1 ? new_s_xy / n_ - 1 : 0;
+    return n_ > 1 ? new_s_xy / (n_ - 1) : 0;
 }
 
 double RunningCovariance::varianceX() const {
-    return n_ > 1 ? new_s_x / n_ - 1 : 0;
+    return n_ > 1 ? new_s_x / (n_ - 1) : 0;
 }
 
 double RunningCovariance::varianceY() const {
-    return n_ > 1 ? new_s_y / n_ - 1 : 0;
+    return n_ > 1 ? new_s_y / (n_ - 1) : 0;
 }

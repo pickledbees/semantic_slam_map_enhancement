@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="map_localiser" type="map_localiser_test"
+          name="covariance_test" output="screen"/>
+</launch>

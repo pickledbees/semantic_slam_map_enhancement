@@ -5,6 +5,7 @@
 #ifndef SRC_RUNNINGCOVARIANCE_H
 #define SRC_RUNNINGCOVARIANCE_H
 
+//maintains a running covariance score between 2 variables
 class RunningCovariance {
 public:
     void insert(double x, double y);
