@@ -50,6 +50,7 @@ bool WelfordCorrelationChain::operator>(const WelfordCorrelationChain &c) const 
 WelfordCorrelationChain &WelfordCorrelationChain::operator=(const WelfordCorrelationChain &c) {
     cov_ = c.cov_;
     elements_ = c.elements_;
+    correlation_ = c.correlation_;
     return *this;
 }
 
@@ -67,6 +68,7 @@ map_localiser::MatchedChain WelfordCorrelationChain::toMatchedChain() const {
         mce.error = 0; //TODO: calculate the error
         chain.elements.push_back(mce);
     }
+    chain.correlation = correlation_;
 
     return chain;
 }

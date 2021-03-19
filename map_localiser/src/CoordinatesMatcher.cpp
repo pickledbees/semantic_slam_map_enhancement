@@ -3,8 +3,11 @@
 //
 
 #include <map_localiser/CoordinatesMatcher.h>
-#include <map_localiser/CorrelationChain.h>
+#include <map_localiser/WelfordCorrelationChain.h>
 #include <queue>
+
+//TODO: remove debug
+#include <ros/ros.h>
 
 CoordinatesMatcher::CoordinatesMatcher(int top, double minCorrThreshold, size_t minChainLength, size_t maxBufferSize,
                                        int strategy) : top_(
@@ -22,28 +25,30 @@ CoordinatesMatcher::match(const map_localiser::ExtractorLandmarks &landmarks, Fl
     //TODO: fix return
     if (pattern.size() < min_chain_length_ || pattern.size() < 3) return {};
 
-    std::priority_queue<CorrelationChain, std::vector<CorrelationChain>, std::greater<>> q; //sorts with lowest correlation on top
+    std::priority_queue<WelfordCorrelationChain, std::vector<WelfordCorrelationChain>, std::greater<>> q; //sorts with lowest correlation on top
     map_localiser::ExtractorLandmark l;
     std::vector<Floorplan::Coord> candidates;
 
     l = pattern[0];
     candidates = fp.getCoords(l.hash);
     for (const auto &c : candidates) {
-        CorrelationChain chain(c.x_, c.y_, c.hash_, pattern);
+        WelfordCorrelationChain chain(c.x_, c.y_, c.hash_, pattern);
         q.push(chain);
     }
 
-    std::queue<CorrelationChain> temp;
+    std::queue<WelfordCorrelationChain> temp;
     for (int i = 1; i < pattern.size(); i++) {
         l = pattern[i];
         candidates = fp.getCoords(l.hash);
         while (!q.empty()) {
-            CorrelationChain chain = q.top();
+            WelfordCorrelationChain chain = q.top();
             q.pop();
 
             for (const auto &c : candidates) {
                 auto newChain = chain;
+                //ROS_INFO("after copy: %s", newChain.getSummary().c_str());
                 newChain.appendCoord(c.x_, c.y_, c.hash_);
+                //ROS_INFO("after append: %s", newChain.getSummary().c_str());
                 if (newChain.getCorrelation() >= min_correlation_threshold_) temp.push(newChain);
             }
         }
