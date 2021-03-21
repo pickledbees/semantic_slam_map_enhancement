@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="map_localiser" name="landmarks_publisher" type="landmarkspublisher.py" output="screen"/>
+</launch>

@@ -213,6 +213,7 @@ target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
         src/plotter.py
+        src/landmarkspublisher.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 

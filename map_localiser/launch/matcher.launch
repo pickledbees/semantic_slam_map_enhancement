@@ -4,4 +4,6 @@
     <node pkg="map_localiser" type="map_localiser_coordinates_matcher_node" name="matcher_node" output="screen"/>
     <node if="$(arg visualiser)" pkg="map_localiser" type="map_localiser_match_visualiser_node"
           name="landmark_visualiser" output="screen"/>
+    <node if="$(arg visualiser)" type="rviz" name="rviz" pkg="rviz"
+          args="-d $(find map_localiser)/rviz/matcher_tester.rviz"/>
 </launch>

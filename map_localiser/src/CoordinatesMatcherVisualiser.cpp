@@ -29,7 +29,7 @@ public:
     }
 
     void loadImage() {
-        nh_.getParam("/matcher/visualiser/floorplan_file_path", file_path_);
+        nh_.getParam("/matcher/floorplan_file_path", file_path_);
 
         ROS_INFO("reading image file");
 
@@ -73,9 +73,9 @@ public:
             altered.push(alteredPixel);
 
             //mark
-            pixel[2] = 255;
-            pixel[1] = 0;
-            pixel[0] = 0;
+            pixel[2] = 0;
+            pixel[1] = 255;
+            pixel[0] = 255;
         }
 
         //publish
