@@ -15,11 +15,14 @@ def rgb_of(name):
     return rgb[name] if name in rgb else (255, 255, 255)
 
 
-NEAREST_SIZE = 10
+NEAREST_SIZE = 7
 ERRORIFY = True
 error_RGBs = [rgb_of("mirror")]
 TRANSFORM = False
 tf_quaternion = (1, 0, 0, 0)
+ORIGIN_COLOUR = (255, 0, 0)
+MARKER_COLOUR = (255, 255, 0)
+IMG_WIN_SIZE = (800, 800)
 
 
 # implement
@@ -56,89 +59,66 @@ def extract(bmpfile):
     pix = im.load()
     w, h = im.size
 
-    origins = []
+    origin = (0, 0)
 
-    # find black
+    # find origin
     for x in range(w):
         for y in range(h):
-            if pix[x, y] == (255, 0, 0):
-                origins.append((x, y))
+            if pix[x, y] == ORIGIN_COLOUR:
+                origin = (x, y)
 
-    patterns = []
-    pixel_sets = []
-    images = []
-    # extract landmarks
-    for b in origins:
-        nearest = {}
-        for x in range(w):
-            for y in range(h):
-                d = distance(b[0], b[1], x, y)
-                colour = pix[x, y]
-                if colour in nearest:
-                    if d < nearest[colour][0]:
-                        nearest[colour] = (d, x, y, colour)
-                else:
+    nearest = {}
+    for x in range(w):
+        for y in range(h):
+            d = distance(origin[0], origin[1], x, y)
+            colour = pix[x, y]
+            if colour == ORIGIN_COLOUR:
+                continue
+            if colour in nearest:
+                if d < nearest[colour][0]:
                     nearest[colour] = (d, x, y, colour)
-        nearest_set = []
-        for colour in nearest:
-            nearest_set.append(nearest[colour])
-        nearest_set = sorted(nearest_set, key=lambda el: el[0])[:NEAREST_SIZE]
-        pattern = []
-        pixel_set = []
-        for e in nearest_set:
-            pattern.append(lm(e[1], 0, e[2], rgb_to_hash(e[3])))
-            pixel_set.append((e[1], e[2], e[3]))
+            else:
+                nearest[colour] = (d, x, y, colour)
+    nearest_set = []
+    for colour in nearest:
+        nearest_set.append(nearest[colour])
+    nearest_set = sorted(nearest_set, key=lambda el: el[0])[:NEAREST_SIZE]
+    pattern = []
+    pixel_set = []
+    for e in nearest_set:
+        pattern.append(lm(e[1], 0, e[2], rgb_to_hash(e[3])))
+        pixel_set.append((e[1], e[2], e[3]))
 
-        if ERRORIFY:
-            pattern = errorify(error_RGBs, pattern, w, h)
+    if ERRORIFY:
+        pattern = errorify(error_RGBs, pattern, w, h)
 
-        if TRANSFORM:
-            pattern = transform(tf_quaternion, pattern)
+    if TRANSFORM:
+        pattern = transform(tf_quaternion, pattern)
 
-        patterns.append(pattern)
-        pixel_sets.append(pixel_set)
+    for pixel in pixel_set:
+        pix[pixel[0], pixel[1]] = MARKER_COLOUR  # display extracted points as yellow
+    im.resize(IMG_WIN_SIZE).show()
 
-        # im_copy = im.copy()
-        # pix_copy = im.load()
-        #
-        # for l in patterns[0]:
-        #     pix_copy[l.x, l.z] = (255, 0, 0)
-        #
-        # images.append(im_copy.resize((800, 800)))
-
-    # im.close()
-
-    return patterns, origins, pixel_sets, im, pix
+    return pattern, origin
 
 
 def publisher():
     rospy.init_node('landmarks_publisher', anonymous=True)
-    pub = rospy.Publisher('/landmarks', ExtractorLandmarks, queue_size=10)
+    landmarks_topic = rospy.get_param("/matcher/landmarks_topic", "/landmarks")
+    floorplan_file_path = rospy.get_param("/matcher/floorplan_file_path")
+    pub = rospy.Publisher(landmarks_topic, ExtractorLandmarks, queue_size=10)
 
-    patterns, origins, pixel_sets, im, pix = extract('/home/han/Workspace/catkin_ws/matcher_test/perfect_fp.bmp')
+    pattern, origin = extract(floorplan_file_path)
 
-    rate = rospy.Rate(1)
-    for i in range(len(patterns)):
+    rate = rospy.Rate(0.5)
+    while not rospy.is_shutdown():
         e = ExtractorLandmarks()
         e.header.frame_id = "world"
         e.header.stamp = rospy.Time.now()
-        for l in patterns[i]:
+        for l in pattern:
             e.landmarks.append(lm(l.x, l.y, l.z, l.hash))
-        rospy.loginfo("showing extractions for origin " + str(origins[i]))
-
-        # show image
-        for pixel in pixel_sets[i]:
-            pix[pixel[0], pixel[1]] = (255, 0, 0)
-
-        # im.copy().resize((800, 800)).show()
+        rospy.loginfo("showing extractions for origin " + str(origin))
         pub.publish(e)
-        print(e)
-        # raw_input("press any key to continue")
-
-        # restore
-        for pixel in pixel_sets[i]:
-            pix[pixel[0], pixel[1]] = pixel[2]
-
         rate.sleep()
 
 
