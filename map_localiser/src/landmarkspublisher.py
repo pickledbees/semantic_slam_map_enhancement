@@ -7,11 +7,52 @@ from PIL import Image
 from map_localiser.msg import ExtractorLandmark
 from map_localiser.msg import ExtractorLandmarks
 
+rgb = {
+    "air": (255, 255, 255),
+    "bag": (128, 0, 192),
+    "bathtub": (0, 0, 192),
+    "bed": (0, 0, 128),
+    "bg": (0, 0, 0),
+    "blinds": (192, 0, 128),
+    "books": (128, 192, 128),
+    "bookshelf": (64, 128, 0),
+    "box": (192, 64, 128),
+    "cabinet": (128, 128, 0),
+    "ceiling": (0, 192, 128),
+    "chair": (128, 0, 128),
+    "clothes": (128, 64, 128),
+    "counter": (64, 0, 128),
+    "curtain": (0, 64, 0),
+    "desk": (64, 128, 128),
+    "door": (64, 0, 0),
+    "dresser": (128, 64, 0),
+    "floor": (0, 128, 0),
+    "floormat": (0, 64, 128),
+    "fridge": (64, 64, 0),
+    "lamp": (128, 128, 64),
+    "mirror": (128, 192, 0),
+    "nightstand": (0, 0, 64),
+    "paper": (64, 192, 0),
+    "person": (192, 192, 128),
+    "picture": (192, 128, 0),
+    "pillow": (0, 192, 0),
+    "shelves": (192, 128, 128),
+    "shower_c": (64, 64, 128),
+    "sink": (0, 128, 64),
+    "sofa": (0, 128, 128),
+    "table": (128, 128, 128),
+    "toilet": (128, 0, 64),
+    "towel": (192, 192, 0),
+    "tv": (192, 64, 0),
+    "wall": (128, 0, 0),
+    "whiteboard": (64, 192, 128),
+    "window": (192, 0, 0)
+}
+
+trivial = map(lambda x: rgb[x], ["bg", "floor", "ceiling", "wall", "window", "person", "air"])
+
 
 def rgb_of(name):
-    rgb = {
-        "mirror": (128, 192, 0)
-    }
     return rgb[name] if name in rgb else (255, 255, 255)
 
 
@@ -72,7 +113,7 @@ def extract(bmpfile):
         for y in range(h):
             d = distance(origin[0], origin[1], x, y)
             colour = pix[x, y]
-            if colour == ORIGIN_COLOUR:
+            if colour == ORIGIN_COLOUR or colour not in list(rgb.values()) or colour in trivial:
                 continue
             if colour in nearest:
                 if d < nearest[colour][0]:
@@ -106,6 +147,7 @@ def publisher():
     rospy.init_node('landmarks_publisher', anonymous=True)
     landmarks_topic = rospy.get_param("/matcher/landmarks_topic", "/landmarks")
     floorplan_file_path = rospy.get_param("/matcher/floorplan_file_path")
+    print(floorplan_file_path)
     pub = rospy.Publisher(landmarks_topic, ExtractorLandmarks, queue_size=10)
 
     pattern, origin = extract(floorplan_file_path)

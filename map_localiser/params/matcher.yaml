@@ -6,7 +6,7 @@ matcher:
   max_buffer_size: 10000 #maximum no. of chains to compute per pass
   landmarks_topic: "/landmarks"
   match_result_topic: "/match_results"
-  floorplan_file_path: "/home/han/Workspace/catkin_ws/matcher_test/patterned_4.bmp"
+  floorplan_file_path: "/home/han/Workspace/catkin_ws/matcher_test/erroneous.bmp"
   floorplan_landmark_aggregation: false  #aggregate contiguous pixels to find CoM to use as landmark coordinate
   visualiser:
     image_topic: "/matcher_visualiser_image"
