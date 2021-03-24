@@ -1,0 +1,7 @@
+<launch>
+    <include file="$(find map_localiser)/launch/matcher.launch">
+        <arg name="visualiser" value="true"/>
+    </include>
+    <include file="$(find map_localiser)/launch/publisher.launch"/>
+    <include file="$(find map_localiser)/launch/plotter.launch"/>
+</launch>

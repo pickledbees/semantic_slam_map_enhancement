@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import math
+
 import rospy
 from map_localiser.msg import MatchResult
 from matplotlib import pyplot as plt
@@ -39,7 +40,10 @@ def plot(chain, pattern):
 
 
 def callback(data):
-    plot(data.chains[-1].elements, data.pattern)
+    if len(data.chains) == 0:
+        rospy.loginfo("no chain to plot")
+    else:
+        plot(data.chains[-1].elements, data.pattern)
 
 
 def listener():

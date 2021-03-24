@@ -65,6 +65,8 @@ CoordinatesMatcher::match(const map_localiser::ExtractorLandmarks &landmarks, Fl
 
     map_localiser::MatchResult result;
     result.pattern = pattern;
+    while (q.size() > top_) q.pop();
+
     while (!q.empty()) {
         result.chains.push_back(q.top().toMatchedChain());
         q.pop();

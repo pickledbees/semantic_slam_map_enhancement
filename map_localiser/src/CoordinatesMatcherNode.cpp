@@ -54,11 +54,13 @@ void CoordinatesMatcherNode::matchCallback(map_localiser::ExtractorLandmarks lan
         return;
     }
 
+    auto begin = ros::Time::now();
     map_localiser::MatchResult result = matcher_->match(landmarks, fp_);
+    double duration = (ros::Time::now() - begin).toSec();
 
     //summary ros info
     std::ostringstream summary;
-    summary << "Found " << result.chains.size() << " chains" << std::endl;
+    summary << "Found " << result.chains.size() << " chains in " << duration << "seconds" << std::endl;
     summary << "pattern_len=" << result.pattern.size() << std::endl;
     for (const auto &chain : result.chains) {
         summary << "corr=" << chain.correlation << std::endl;

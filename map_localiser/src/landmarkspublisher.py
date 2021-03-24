@@ -56,19 +56,41 @@ def rgb_of(name):
     return rgb[name] if name in rgb else (255, 255, 255)
 
 
-NEAREST_SIZE = 7
-ERRORIFY = True
-error_RGBs = [rgb_of("mirror")]
+NEAREST_SIZE = 6
+
+ERRORIFY = False
+ERROR_RGBS = [rgb_of("box"), rgb_of("cabinet"), rgb_of("chair"), rgb_of("clothes"), rgb_of("counter"),
+              rgb_of("curtain")][:1]
 TRANSFORM = False
-tf_quaternion = (1, 0, 0, 0)
+TF_QUARTERNION = (1, 0, 0, 0)
+NOISE = True
+NOISE_SD = 45.0  # noise should match with scale
+SCALE = True
+SCALE_FACTOR = 100  # scale should match with noise
+
 ORIGIN_COLOUR = (255, 0, 0)
 MARKER_COLOUR = (255, 255, 0)
 IMG_WIN_SIZE = (800, 800)
 
 
-# implement
-def transform(quaternion, landmarks):
-    return landmarks
+def noise(noise_sd, pattern):
+    for landmark in pattern:
+        landmark.x = landmark.x + random.gauss(0, noise_sd)
+        landmark.y = landmark.y + random.gauss(0, noise_sd)
+        landmark.z = landmark.z + random.gauss(0, noise_sd)
+    return pattern
+
+
+def scale(scale, pattern):
+    for landmark in pattern:
+        landmark.x = landmark.x * scale
+        landmark.y = landmark.y * scale
+        landmark.z = landmark.z * scale
+    return pattern
+
+
+def transform(quaternion, pattern):
+    return pattern
 
 
 def errorify(RGBs, pattern, w, h):
@@ -128,16 +150,24 @@ def extract(bmpfile):
     pixel_set = []
     for e in nearest_set:
         pattern.append(lm(e[1], 0, e[2], rgb_to_hash(e[3])))
-        pixel_set.append((e[1], e[2], e[3]))
 
     if ERRORIFY:
-        pattern = errorify(error_RGBs, pattern, w, h)
+        pattern = errorify(ERROR_RGBS, pattern, w, h)
+
+    for landmark in pattern:
+        pixel_set.append((landmark.x, landmark.z, hash_to_rgb(landmark.hash)))
 
     if TRANSFORM:
-        pattern = transform(tf_quaternion, pattern)
+        pattern = transform(TF_QUARTERNION, pattern)
+
+    if SCALE:
+        pattern = scale(SCALE_FACTOR, pattern)
+
+    if NOISE:
+        pattern = noise(NOISE_SD, pattern)
 
     for pixel in pixel_set:
-        pix[pixel[0], pixel[1]] = MARKER_COLOUR  # display extracted points as yellow
+        pix[pixel[0], pixel[1]] = MARKER_COLOUR
     im.resize(IMG_WIN_SIZE).show()
 
     return pattern, origin
@@ -173,8 +203,6 @@ def lm(x, y, z, _hash):
     e.hash = _hash
     return e
 
-
-trial = [lm(1, 1, 1, 4243456), lm(1, 2, 3, 8421504), lm(3, 3, 3, 12599424), lm(0, 0, 0, 8388736)]
 
 if __name__ == '__main__':
     try:
